@@ -1,11 +1,11 @@
 #include <iostream>
 #include <fstream>
 #include <time.h>
-#include <map>
 
 #include "ReadInput.hpp"
 #include "ErrorCodes.hpp"
 #include "Tweet.hpp"
+#include "User.hpp"
 
 using namespace std;
 
@@ -17,7 +17,7 @@ int main(int argc, char** argv){
   cout << endl << "Provide Lexicon path:" << endl;
   cin >> lexicon_path;
   ifstream lexicon = OpenInFile(lexicon_path);
-  map<string,double> Lexicon = ReadLexicon(lexicon);
+  unordered_map<string,double> Lexicon = ReadLexicon(lexicon);
   lexicon.close();
 
   //open and read input file
@@ -26,10 +26,25 @@ int main(int argc, char** argv){
   cout << "Read input set of " << Tweets.size() << "tweets" << endl;
   data.close();
 
-  for(int i=0; i<Tweets.size(); i++){
-    delete Tweets[i];
-  }
-return 0;
+  //open and read cryptocurrrencies file
+  string crypto_path;
+  cout << endl << "Provide CryptoCurrencies path:" << endl;
+  cin >> crypto_path;
+  ifstream crypto = OpenInFile(crypto_path);
+  unordered_map<string,string> CrytoNameMap = ReadCryptos(crypto);
+  crypto.close();
+
+  TweetScores(Tweets,Lexicon);        //Calc Tweet scores
+  UserMap usermap;          //maps users by userid
+  //assign each tweet to its user
+  vector<User*> Users = GroupTweetsByUser(usermap,Tweets);
+
+//  VectorizeUsers(Users);
+
+  //Cleanup
+  for(auto it=Tweets.begin(); it!=Tweets.end(); it++) delete (*it);
+  for(auto it=Users.begin(); it!=Users.end(); it++) delete (*it);
+  return OK;
 /*
   //Initialize Hashtables
   vector<HashTable*> LSH_Hashtables(CmdArgs::L);

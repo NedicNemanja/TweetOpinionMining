@@ -1,4 +1,5 @@
 #include "Tweet.hpp"
+#include <cmath>
 
 using namespace std;
 
@@ -14,6 +15,35 @@ void Tweet::add_token(std::string token){
   tokens.push_back(token);
 }
 
+void Tweet::print(){
+  for(auto it=tokens.begin(); it!=tokens.end(); it++){
+    cout << "(" << *it << ")";
+  }
+  cout << endl;
+}
+
+//sum of all tokens sentiment values from lexicon, but normalised
+void Tweet::Score(std::unordered_map<std::string,double> &lexicon){
+  double total_score=0;
+  for(auto it=tokens.begin(); it!=tokens.end(); it++){
+    total_score += lexicon[*it];
+  }
+  score = total_score/sqrt(total_score*total_score+alpha);
+}
+
+double Tweet::getScore(){
+  return score;
+}
+
+string Tweet::getUserId(){
+  return userid;
+}
+
+string Tweet::getTweetId(){
+  return tweetid;
+}
+
+
 Tweet* GetTweet(std::ifstream &data){
   //read id
   CSVRow row;
@@ -28,9 +58,9 @@ Tweet* GetTweet(std::ifstream &data){
   return tweet;
 }
 
-void Tweet::print(){
-  for(auto it=tokens.begin(); it!=tokens.end(); it++){
-    cout << "(" << *it << ")";
+//cals tweet scores
+void TweetScores(vector<Tweet*> &Tweets, unordered_map<string,double> &lexicon){
+  for(auto it=Tweets.begin(); it!=Tweets.end(); it++){
+    (*it)->Score(lexicon);
   }
-  cout << endl;
 }

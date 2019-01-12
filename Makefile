@@ -3,14 +3,14 @@ SOURCE_DIR = ./source
 OBJECT_DIR = ./object
 
 CC = g++
-CFLAGS=-I$(INCLUDE_DIR) -O3 -fmax-errors=1
+CFLAGS=-I$(INCLUDE_DIR) -O3 -fmax-errors=1 -lm
 OUT = recommendation
 
-_DEPS = ErrorCodes.hpp myvector.hpp ParsingCSV.hpp ReadInput.hpp Tweet.hpp utility.hpp
+_DEPS = ErrorCodes.hpp myvector.hpp ParsingCSV.hpp ReadInput.hpp Tweet.hpp User.hpp utility.hpp
 #pattern matching from  _DEPS to include directory
 DEPS = $(patsubst %,$(INCLUDE_DIR)/%,$(_DEPS))
 
-_OBJ = main.o myvector.o ParsingCSV.o ReadInput.o Tweet.o utility.o
+_OBJ = main.o myvector.o ParsingCSV.o ReadInput.o Tweet.o User.o utility.o
 #same pattern matching principe
 OBJ = $(patsubst %,$(OBJECT_DIR)/%,$(_OBJ))
 
