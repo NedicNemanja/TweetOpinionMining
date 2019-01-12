@@ -39,6 +39,7 @@ int main(int argc, char** argv){
   for(auto it=CryptoNameMap.begin(); it!=CryptoNameMap.end(); it++)
     CryptoSet.insert(it->second);
 
+  /************Vectorization of user sentiment towards CryptoCurrencies********/
   TweetScores(Tweets,Lexicon);  //Calc Tweet scores
   UserMap usermap;              //maps users by userid
   /*Assign each tweet to its user*/
@@ -57,6 +58,7 @@ int main(int argc, char** argv){
   }
   cout << Vectors.size() << " Vectors refering to cryptocurrencies." << endl;
 
+  /**********Finding Nearest Neighbors using LSH*******************************/
 
   //Cleanup
   for(auto it=Tweets.begin(); it!=Tweets.end(); it++) delete (*it);

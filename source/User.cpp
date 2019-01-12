@@ -84,6 +84,9 @@ double User::AverageValue(){
   return sum/num_cryptos;
 }
 
+/*Create myvector using crypto_values,ordered as in CryptoSet.
+If there are unknown crypto_values use average value.
+Values are normalised by subtracting average_value from each of them.*/
 myvector User::Vectorize(set<string> CryptoSet){
   double average_value = AverageValue();
   if(isnan(average_value))
@@ -98,7 +101,7 @@ myvector User::Vectorize(set<string> CryptoSet){
     }
     else{
       //crypto known to user and has a value
-      myvalues[i] = val->second;
+      myvalues[i] = val->second-average_value;
     }
   }
   return myvector(myvalues,userid);
