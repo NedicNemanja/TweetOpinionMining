@@ -17,7 +17,7 @@ int main(int argc, char** argv){
   cout << endl << "Provide Lexicon path:" << endl;
   cin >> lexicon_path;
   ifstream lexicon = OpenInFile(lexicon_path);
-  unordered_map<string,double> Lexicon = ReadLexicon(lexicon);
+  map<string,double> Lexicon = ReadLexicon(lexicon);
   lexicon.close();
 
   //open and read input file
@@ -31,15 +31,16 @@ int main(int argc, char** argv){
   cout << endl << "Provide CryptoCurrencies path:" << endl;
   cin >> crypto_path;
   ifstream crypto = OpenInFile(crypto_path);
-  unordered_map<string,string> CrytoNameMap = ReadCryptos(crypto);
+  map<string,string> CryptoNameMap = ReadCryptos(crypto);
   crypto.close();
 
-  TweetScores(Tweets,Lexicon);        //Calc Tweet scores
-  UserMap usermap;          //maps users by userid
+  TweetScores(Tweets,Lexicon);  //Calc Tweet scores
+  UserMap usermap;              //maps users by userid
   //assign each tweet to its user
   vector<User*> Users = GroupTweetsByUser(usermap,Tweets);
-
-//  VectorizeUsers(Users);
+  //Using tweet scores calculate crypto values for each user
+  for(auto user=Users.begin(); user!=Users.end(); user++)
+    (*user)->CalcCryptoValues(CryptoNameMap);
 
   //Cleanup
   for(auto it=Tweets.begin(); it!=Tweets.end(); it++) delete (*it);

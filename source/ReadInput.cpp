@@ -62,9 +62,9 @@ void ParseArguments(int argc, char** argv){
   }
 }
 
-unordered_map<string,double> ReadLexicon(ifstream &data){
+map<string,double> ReadLexicon(ifstream &data){
   int num_pairs=0;
-  unordered_map<string,double> Lexicon;
+  map<string,double> Lexicon;
   //read row by row, row0 is key, row1 is value of the map
   CSVRow row;
   data >> row;
@@ -92,9 +92,9 @@ vector<Tweet*> ReadDataset(ifstream &data){
 subsquent crypto name. In the file each line concerns a different cryptocurrency
 and the 5th column contains its full/real name, if the 5th column is absent the
 name present in the 1st column is used.*/
-unordered_map<string,string> ReadCryptos( ifstream&data){
+map<string,string> ReadCryptos(ifstream &data){
   int num_crypto=0;
-  unordered_map<string,string> CryptoNameMap;
+  map<string,string> CryptoNameMap;
   //read row by row
   CSVRow row;
   data >> row;
@@ -114,6 +114,7 @@ unordered_map<string,string> ReadCryptos( ifstream&data){
     data >> row;
   }
   cout << "Found " << num_crypto << " different cryptocurrrencies." << endl;
+  CmdArgs::dimension = num_crypto;
   return CryptoNameMap;
 }
 

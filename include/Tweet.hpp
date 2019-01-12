@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
-#include <unordered_map>
+#include <map>
 
 #include "ParsingCSV.hpp"
 
@@ -22,15 +22,16 @@ class Tweet{
     void add_token(std::string token);
     void print();
     //sum of all tokens sentiment values from lexicon, but normalised
-    void Score(std::unordered_map<std::string,double> &lexicon);
+    void Score(std::map<std::string,double> &lexicon);
     double getScore();
     std::string getUserId();
     std::string getTweetId();
+    std::vector<std::string> getTokens();
 };
 
 //read a tweet from stream and return true for success, else false
 Tweet* GetTweet(std::ifstream &data);
 //cals tweet scores
-void TweetScores(std::vector<Tweet*>&, std::unordered_map<std::string,double>&);
+void TweetScores(std::vector<Tweet*>&, std::map<std::string,double>&);
 
 #endif

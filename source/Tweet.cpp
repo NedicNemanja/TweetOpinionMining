@@ -23,7 +23,7 @@ void Tweet::print(){
 }
 
 //sum of all tokens sentiment values from lexicon, but normalised
-void Tweet::Score(std::unordered_map<std::string,double> &lexicon){
+void Tweet::Score(std::map<std::string,double> &lexicon){
   double total_score=0;
   for(auto it=tokens.begin(); it!=tokens.end(); it++){
     total_score += lexicon[*it];
@@ -43,6 +43,11 @@ string Tweet::getTweetId(){
   return tweetid;
 }
 
+std::vector<std::string> Tweet::getTokens(){
+  return tokens;
+}
+
+
 
 Tweet* GetTweet(std::ifstream &data){
   //read id
@@ -59,7 +64,7 @@ Tweet* GetTweet(std::ifstream &data){
 }
 
 //cals tweet scores
-void TweetScores(vector<Tweet*> &Tweets, unordered_map<string,double> &lexicon){
+void TweetScores(vector<Tweet*> &Tweets, map<string,double> &lexicon){
   for(auto it=Tweets.begin(); it!=Tweets.end(); it++){
     (*it)->Score(lexicon);
   }
