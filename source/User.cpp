@@ -1,4 +1,5 @@
 #include "User.hpp"
+#include <math.h>
 
 using namespace std;
 
@@ -24,6 +25,11 @@ void User::print(){
 std::vector<Tweet*> User::getTweets(){
   return tweets;
 }
+
+std::string User::getUserId(){
+  return userid;
+}
+
 
 vector<User*> GroupTweetsByUser(UserMap &usermap, std::vector<Tweet*> &Tweets){
   vector<User*> users;
@@ -66,4 +72,34 @@ void User::CalcCryptoValues(map<string,string> &CryptoNameMap){
       }
     }
   }
+}
+
+double User::AverageValue(){
+  double sum=0;
+  int num_cryptos=0;
+  for(auto it=crypto_values.begin(); it!=crypto_values.end(); it++){
+    sum += it->second;
+    num_cryptos++;
+  }
+  return sum/num_cryptos;
+}
+
+myvector User::Vectorize(set<string> CryptoSet){
+  double average_value = AverageValue();
+  if(isnan(average_value))
+    return myvector();
+  vector<double> myvalues(CryptoSet.size());
+  int i=0;
+  for(auto it=CryptoSet.begin(); it!=CryptoSet.end(); it++,i++){
+    map<string,double>::iterator val;
+    if((val=crypto_values.find(*it)) == crypto_values.end()){
+      //crypto unknown to user
+      myvalues[i] = average_value;
+    }
+    else{
+      //crypto known to user and has a value
+      myvalues[i] = val->second;
+    }
+  }
+  return myvector(myvalues,userid);
 }

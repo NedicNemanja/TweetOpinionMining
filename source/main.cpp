@@ -1,11 +1,13 @@
 #include <iostream>
 #include <fstream>
 #include <time.h>
+#include <set>
 
 #include "ReadInput.hpp"
 #include "ErrorCodes.hpp"
 #include "Tweet.hpp"
 #include "User.hpp"
+#include "myvector.hpp"
 
 using namespace std;
 
@@ -33,14 +35,28 @@ int main(int argc, char** argv){
   ifstream crypto = OpenInFile(crypto_path);
   map<string,string> CryptoNameMap = ReadCryptos(crypto);
   crypto.close();
+  set<string> CryptoSet;  //set of all cryptos by their real name
+  for(auto it=CryptoNameMap.begin(); it!=CryptoNameMap.end(); it++)
+    CryptoSet.insert(it->second);
 
   TweetScores(Tweets,Lexicon);  //Calc Tweet scores
   UserMap usermap;              //maps users by userid
-  //assign each tweet to its user
+  /*Assign each tweet to its user*/
   vector<User*> Users = GroupTweetsByUser(usermap,Tweets);
-  //Using tweet scores calculate crypto values for each user
+  /*Using tweet scores calculate crypto values for each user*/
   for(auto user=Users.begin(); user!=Users.end(); user++)
     (*user)->CalcCryptoValues(CryptoNameMap);
+  /*Turning crypto_values into myvector type for each user*/
+  vector<myvector> Vectors;
+  for(auto it=Users.begin(); it!=Users.end(); it++){
+    myvector vector = (*it)->Vectorize(CryptoSet);
+    if(vector.size() != 0){
+      //ignore vectors that didn't mention any crypto
+      Vectors.push_back(vector);
+    }
+  }
+  cout << Vectors.size() << " Vectors refering to cryptocurrencies." << endl;
+
 
   //Cleanup
   for(auto it=Tweets.begin(); it!=Tweets.end(); it++) delete (*it);
