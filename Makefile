@@ -3,14 +3,14 @@ SOURCE_DIR = ./source
 OBJECT_DIR = ./object
 
 CC = g++
-CFLAGS=-I$(INCLUDE_DIR) -O3
-OUT = cluster
+CFLAGS=-I$(INCLUDE_DIR) -O3 -fmax-errors=1
+OUT = recommendation
 
-_DEPS = Cluster.hpp ClusterSpace.hpp CosineSimilarity.hpp ErrorCodes.hpp HashTable.hpp HypercubeEuclidean.hpp LSHEuclidean.hpp Metric.hpp myvector.hpp utility.hpp WriteOutput.hpp ParsingCSV.hpp ReadInput.hpp WriteOutput.hpp
+_DEPS = ErrorCodes.hpp myvector.hpp utility.hpp ParsingCSV.hpp ReadInput.hpp
 #pattern matching from  _DEPS to include directory
 DEPS = $(patsubst %,$(INCLUDE_DIR)/%,$(_DEPS))
 
-_OBJ = Cluster.o ClusterSpace.o CosineSimilarity.o HashTable.o HypercubeEuclidean.o LSHEuclidean.o main.o Metric.o myvector.o utility.o WriteOutput.o ReadInput.o WriteOutput.o
+_OBJ = main.o myvector.o utility.o ReadInput.o
 #same pattern matching principe
 OBJ = $(patsubst %,$(OBJECT_DIR)/%,$(_OBJ))
 
@@ -30,4 +30,4 @@ count:
 	wc $(SOURCE_DIR)/*.cpp $(DEPS)
 
 clean:
-	rm -f $(OBJECT_DIR)/*.o ./cluster
+	rm -f $(OBJECT_DIR)/*.o ./recommendation
