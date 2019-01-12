@@ -8,7 +8,6 @@
 #include <sstream>
 #include <utility>  //std::move()
 #include <ctype.h> //tolower()
-      #include <unistd.h>
 
 using namespace std;
 
@@ -79,32 +78,15 @@ map<string,double> ReadLexicon(ifstream &data){
   return Lexicon;
 }
 
-MyVectorContainer ReadDataset(ifstream &data){
+vector<Tweet*> ReadDataset(ifstream &data){
   cout << endl << "Reading dataset from disk..." << endl;
-  //read coords from input and initialize vectors
-  string userid, tweetid;
-  vector<double> values;  //temp vector that gets overwritten every loop
-  vector<myvector> vectors;
-  while(GetVector(data, values, userid, tweetid)){
-      vectors.push_back(myvector(values,tweetid));
+  std::vector<Tweet*> Tweets;
+  Tweet* tweet;
+  while((tweet=GetTweet(data)) != NULL){
+    tweet->print(); cout << endl;
+    Tweets.push_back(tweet);
   }
-  return vectors;
-}
-
-//read coordinates of a vector and return true for success, else false
-bool GetVector(ifstream &data,vector<double> &values, string &userid, string &tweetid){
-  //read id
-  CSVRow row;
-  int row_index=0;
-  data >> row;  //read a whole row
-  if(data.eof()) return false;
-  userid = row[row_index++];
-  tweetid = row[row_index++];
-  //read coords
-  for(int i=0; i<row.size(); i++){
-    //values.push_back(SentimentValue(row[row_index++]));
-  }
-  return true;
+  return Tweets;
 }
 
 ifstream OpenInFile(string &filename){

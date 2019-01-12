@@ -5,6 +5,7 @@
 
 #include "ReadInput.hpp"
 #include "ErrorCodes.hpp"
+#include "Tweet.hpp"
 
 using namespace std;
 
@@ -18,13 +19,17 @@ int main(int argc, char** argv){
   ifstream lexicon = OpenInFile(lexicon_path);
   map<string,double> Lexicon = ReadLexicon(lexicon);
   lexicon.close();
-return 0;
+
   //open and read input file
   ifstream data = OpenInFile(CmdArgs::InputFile);
-  AllVectors = ReadDataset(data);
-  cout << "Read input set of " << AllVectors.size() << "vectors" << endl;
+  vector<Tweet*> Tweets = ReadDataset(data);
+  cout << "Read input set of " << Tweets.size() << "tweets" << endl;
   data.close();
 
+  for(int i=0; i<Tweets.size(); i++){
+    delete Tweets[i];
+  }
+return 0;
 /*
   //Initialize Hashtables
   vector<HashTable*> LSH_Hashtables(CmdArgs::L);

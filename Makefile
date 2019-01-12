@@ -6,11 +6,11 @@ CC = g++
 CFLAGS=-I$(INCLUDE_DIR) -O3 -fmax-errors=1
 OUT = recommendation
 
-_DEPS = ErrorCodes.hpp myvector.hpp utility.hpp ParsingCSV.hpp ReadInput.hpp
+_DEPS = ErrorCodes.hpp myvector.hpp ParsingCSV.hpp ReadInput.hpp Tweet.hpp utility.hpp
 #pattern matching from  _DEPS to include directory
 DEPS = $(patsubst %,$(INCLUDE_DIR)/%,$(_DEPS))
 
-_OBJ = main.o myvector.o utility.o ReadInput.o
+_OBJ = main.o myvector.o ParsingCSV.o ReadInput.o Tweet.o utility.o
 #same pattern matching principe
 OBJ = $(patsubst %,$(OBJECT_DIR)/%,$(_OBJ))
 

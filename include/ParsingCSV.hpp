@@ -8,6 +8,7 @@
 #include <vector>
 #include <string>
 
+//FROM:
 // stackoverflow.com/questions/1120140/how-can-i-read-and-parse-csv-files-in-c
 
 class CSVRow
@@ -45,11 +46,7 @@ class CSVRow
         std::vector<std::string>    m_data;
 };
 
-std::istream& operator>>(std::istream& str, CSVRow& data)
-{
-    data.readNextRow(str);
-    return str;
-}
+std::istream& operator>>(std::istream& str, CSVRow& data);
 
 class CSVIterator
 {
@@ -76,4 +73,5 @@ class CSVIterator
         std::istream*       m_str;
         CSVRow              m_row;
 };
+
 #endif
