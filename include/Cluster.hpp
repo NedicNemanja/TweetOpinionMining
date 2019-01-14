@@ -9,23 +9,23 @@
 
 class Cluster{
     myvector centroid;
-    vector_index medoid; //-1 if center is not part of the dataset
-    //vector_indexes of points that belong to the cluster, excluding centers
-    std::vector<vector_index> members;
+    myvector* medoid; //-1 if center is not part of the dataset
+    //points that belong to the cluster, excluding centers
+    std::vector<myvector*> members;
   public:
     Cluster(myvector &center);
     //in case center is part of the dataset, save its index
-    Cluster(vector_index c_index);
+    Cluster(myvector* c_index);
     ~Cluster();
     myvector getCenter();//get the vector that used as center of the cluster
-    vector_index getMedoid();
-    void setMedoid(vector_index);
+    myvector* getMedoid();
+    void setMedoid(myvector*);
     void setCentroid(myvector);
-    vector_index setMedoid();
-    std::vector<vector_index> getMembers();
+    myvector* setMedoid();
+    std::vector<myvector*> getMembers();
     void Print(std::ostream &out);
     int size();
-    void AddVector(vector_index vindex);
+    void AddVector(myvector* vindex);
     /*Calc dissimilarity of v from cluster*/
     double ClusterDissimilarity(myvector &v);
     //clear members vector

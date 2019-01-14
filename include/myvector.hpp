@@ -25,7 +25,6 @@ class myvector {
 };
 
 typedef std::vector<myvector> MyVectorContainer;
-typedef int vector_index;  //used to locate a myvector in MyVectorPool
 
 extern MyVectorContainer AllVectors;
 

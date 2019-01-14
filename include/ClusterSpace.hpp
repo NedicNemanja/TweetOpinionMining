@@ -12,8 +12,8 @@ class ClusterSpace{
     std::string init_algorithm;
     std::string assign_algorithm;
     std::string update_algorithm;
-    //bitmap that mirrors MyVectorContainer indexing (true if vector's assigned)
-    std::vector<bool> AssignedVectorBitMap;
+    //vectorid->bool, true if already assigned
+    std::map<std::string,bool> AssignedVectorBitMap;
     int num_assigned_vectors=0; //num of values set to true in BitMap
   public:
     ClusterSpace();

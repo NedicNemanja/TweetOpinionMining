@@ -13,10 +13,10 @@ using namespace std;
 
 ClusterSpace::ClusterSpace(){}
 
-ClusterSpace::ClusterSpace(MyVectorContainer &vectors,string init,
+ClusterSpace::ClusterSpace(vector<myvector> &vectors,string init,
 string assign, string update)
 :init_algorithm(init),assign_algorithm(assign),update_algorithm(update),
-AssignedVectorBitMap(vectors.size(),false),num_assigned_vectors(0)
+AssignedVectorBitMap(),num_assigned_vectors(0)
 {
   cout<<"Starting "<<init<<" | "<<assign<<" | "<<update<<endl;
   if(init_algorithm == "Random Init"){
@@ -24,8 +24,8 @@ AssignedVectorBitMap(vectors.size(),false),num_assigned_vectors(0)
     for(int i=0; i<CmdArgs::number_of_clusters; i++){
       //init cluster with random center
       int vpos = rand()%vectors.size();
-      Clusters.push_back(Cluster(vpos));
-      AssignedVectorBitMap[vpos] = true;
+      Clusters.push_back(Cluster(&(vectors[vpos])));
+      AssignedVectorBitMap[vectors[vpos].get_id()] = true;
       num_assigned_vectors++;
     }
   }
@@ -34,8 +34,8 @@ AssignedVectorBitMap(vectors.size(),false),num_assigned_vectors(0)
     random_device generator;
     uniform_int_distribution<int> distribution(0,vectors.size()-1);
     int vpos = distribution(generator);
-    Clusters.push_back(Cluster(vpos));
-    AssignedVectorBitMap[vpos] =true;
+    Clusters.push_back(Cluster(&(vectors[vpos])));
+    AssignedVectorBitMap[vectors[vpos].get_id()] =true;
     num_assigned_vectors++;
     //distances (vector to nearest center) that get updated every loop
     std::vector<double> DistPartialSums(vectors.size(),0);
@@ -43,10 +43,11 @@ AssignedVectorBitMap(vectors.size(),false),num_assigned_vectors(0)
     for(int t=1; t<CmdArgs::number_of_clusters; t++){
       /*For every non-centroid,compute D(x), the distance between x and the
       nearest center that has already been chosen.*/
-      for(vector_index v=0; v<vectors.size(); v++){
-        if(isCenter(vectors[v])) continue;
+      int v=0;
+      for(auto it=vectors.begin(); it!=vectors.end(); it++,v++){
+        if(isCenter(*it)) continue;
         //update distance to nearest center and keep track in partial sums
-        DistPartialSums[v] = prev_sum + MinDistanceToCenterSquared(vectors[v]);
+        DistPartialSums[v] = prev_sum + MinDistanceToCenterSquared(*it);
         //cout << DistPartialSums[v] << endl;
         prev_sum = DistPartialSums[v];
       }
@@ -57,9 +58,9 @@ AssignedVectorBitMap(vectors.size(),false),num_assigned_vectors(0)
       typename std::vector<double>::iterator new_center =
       upper_bound(DistPartialSums.begin(),DistPartialSums.end(),x(generator));
       //create cluster with new center
-      vector_index vpos = new_center-DistPartialSums.begin();
-      Clusters.push_back(Cluster(vpos));
-      AssignedVectorBitMap[vpos] = true;
+      int vpos = new_center-DistPartialSums.begin();
+      Clusters.push_back(Cluster(&(vectors[vpos])));
+      AssignedVectorBitMap[vectors[vpos].get_id()] = true;
       num_assigned_vectors++;
     }
   }
@@ -96,7 +97,7 @@ void ClusterSpace::Print(){
 
 void ClusterSpace::UnassignAll(){
   int num_assigned_vectors=0;
-  fill(AssignedVectorBitMap.begin(),AssignedVectorBitMap.end(),false);
+  AssignedVectorBitMap.erase(AssignedVectorBitMap.begin(),AssignedVectorBitMap.end());
   for(auto it=Clusters.begin(); it!=Clusters.end(); it++){
     it->UnassignMembers();
   }
@@ -158,19 +159,19 @@ bool ClusterSpace::ObjectiveFunctionCoverges(ClusterSpace &prevCS){
 
 /*Assign vectors to their nearest center*/
 void ClusterSpace::LloydsAssign(MyVectorContainer &vectors){
-  for(int index=0; index<vectors.size(); index++){
-    if(isCenter(vectors[index])) continue;
-    Clusters[NearestCenter(vectors[index])].AddVector(index);
+  for(auto it=vectors.begin(); it!=vectors.end(); it++){
+    if(isCenter(*it)) continue;
+    Clusters[NearestCenter(*it)].AddVector(&(*it));
   }
 }
 
 /*Assign vectors that are unassigned to their nearest center*/
 void ClusterSpace::LloydsAssign(MyVectorContainer &vectors, const string s){
-  for(int index=0,size=vectors.size(); index<size; index++){
-    if(AssignedVectorBitMap[index]) continue; //already assigned
-    if(isCenter(vectors[index])) continue;  //dont assigng a center
-    Clusters[NearestCenter(vectors[index])].AddVector(index);
-    AssignedVectorBitMap[index] = true;
+  for(auto it=vectors.begin(); it!=vectors.end(); it++){
+    if(AssignedVectorBitMap[it->get_id()]) continue; //already assigned
+    if(isCenter(*it)) continue;  //dont assigng a center
+    Clusters[NearestCenter(*it)].AddVector(&(*it));
+    AssignedVectorBitMap[it->get_id()] = true;
     num_assigned_vectors++;
   }
 }
@@ -197,13 +198,13 @@ void ClusterSpace::RangeSearchLSHAssign(MyVectorContainer &vectors,
           multimap<int,Cluster*>::iterator> ret=CenterMaps[i].equal_range(b_hash);
           Cluster* cluster = (ret.first)->second;
           //range search in bucket
-          vector<vector_index> results=HTables[i]->RangeSearch(b_hash,
+          Bucket results=HTables[i]->RangeSearch(b_hash,
           cluster->getCenter(),radius,vectors,AssignedVectorBitMap);
           //assign results to cluster
           for(auto res=results.begin(); res!=results.end(); res++){
-            if(isCenter(vectors[*res])) continue; //dont assign a center
+            if(isCenter(**res)) continue; //dont assign a center
             cluster->AddVector(*res);
-            AssignedVectorBitMap[*res] = true;
+            AssignedVectorBitMap[(*res)->get_id()] = true;
             num_assigned_vectors++;
           }
         }
@@ -242,13 +243,13 @@ void ClusterSpace::RangeSearchHypercubeAssign(MyVectorContainer &vectors,
         multimap<int,Cluster*>::iterator> ret=CenterMap.equal_range(b_hash);
         Cluster* cluster = (ret.first)->second;
         //range search in bucket
-        vector<vector_index> results=htable.RangeSearch(b_hash,
+        Bucket results=htable.RangeSearch(b_hash,
         cluster->getCenter(),radius,vectors,AssignedVectorBitMap);
         //assign results to cluster
         for(auto res=results.begin(); res!=results.end(); res++){
-          if(isCenter(vectors[*res])) continue; //dont assign a center
+          if(isCenter(**res)) continue; //dont assign a center
           cluster->AddVector(*res);
-          AssignedVectorBitMap[*res] = true;
+          AssignedVectorBitMap[(*res)->get_id()] = true;
           num_assigned_vectors++;
         }
       }
@@ -269,15 +270,15 @@ void ClusterSpace::NearestCenterRangeAssign(Bucket bucket,double radius,
   const vector<Cluster*> &clusters,MyVectorContainer &vectors){
   //for every vector of the bucket
   for(auto it=bucket.begin(); it!=bucket.end(); it++){
-    if(AssignedVectorBitMap[*it]) continue;
-    if(isCenter(vectors[*it])) continue;
+    if(AssignedVectorBitMap[(*it)->get_id()]) continue;
+    if(isCenter(**it)) continue;
     //find nearest center
     double min_dist;
-    int pos = NearestCenter(vectors[*it],clusters,&min_dist);
+    int pos = NearestCenter(**it,clusters,&min_dist);
     //if within radius and if they indeed have the same Hash: assign
     if(min_dist<radius){
       clusters[pos]->AddVector(*it);
-      AssignedVectorBitMap[*it] = true;
+      AssignedVectorBitMap[(*it)->get_id()] = true;
       num_assigned_vectors++;
     }
   }
@@ -287,10 +288,10 @@ void ClusterSpace::K_means(MyVectorContainer &vectors){
   //for every cluster
   for(auto cluster=Clusters.begin(); cluster!=Clusters.end(); cluster++){
     vector<coord> mean(CmdArgs::dimension,0);
-    vector<vector_index> members = cluster->getMembers();
+    vector<myvector*> members = cluster->getMembers();
     //add all members to mean
     for(auto member=members.begin(); member!=members.end(); member++){
-      AddVector(mean,vectors[*member].getCoords());
+      AddVector(mean,(*member)->getCoords());
     }
     //if center has id, then its part of the dataset and a member of the cluster
     myvector center = cluster->getCenter();
@@ -309,12 +310,12 @@ void ClusterSpace::K_means(MyVectorContainer &vectors){
 void ClusterSpace::PAM(MyVectorContainer &vectors){
   //for every cluster compute its medoid
   for(auto cluster=Clusters.begin(); cluster!=Clusters.end(); cluster++){
-    vector_index medoid = cluster->getMedoid();
-    double min_dis = cluster->ClusterDissimilarity(vectors[medoid]);
-    vector<vector_index> members = cluster->getMembers();
+    myvector* medoid = cluster->getMedoid();
+    double min_dis = cluster->ClusterDissimilarity(*medoid);
+    vector<myvector*> members = cluster->getMembers();
     //for every member calc sum of distances assuming its the medoid
     for(auto member=members.begin(); member!=members.end(); member++){
-      double dissimilarity = cluster->ClusterDissimilarity(vectors[*member]);
+      double dissimilarity = cluster->ClusterDissimilarity(**member);
       if(dissimilarity < min_dis){
         min_dis = dissimilarity;
         medoid = *member;
@@ -454,13 +455,13 @@ vector<double> ClusterSpace::Silhouette(MyVectorContainer &vectors){
   //for every cluster calculate average of s(p)
   for(int c=0; c<Clusters.size(); c++){
     double sp_sum=0;
-    vector<vector_index> members = Clusters[c].getMembers();
+    vector<myvector*> members = Clusters[c].getMembers();
     //for every member of the cluster
     for(auto p=members.begin(); p!=members.end(); p++){
-      a = Clusters[c].ClusterDissimilarity(vectors[*p])/Clusters[c].size();
+      a = Clusters[c].ClusterDissimilarity(**p)/Clusters[c].size();
       //find second nearest Cluster, and its avg dissimilarity
-      Cluster SecondCluster = SecondNearestCluster(vectors[*p],c);
-      b = SecondCluster.ClusterDissimilarity(vectors[*p])/SecondCluster.size();
+      Cluster SecondCluster = SecondNearestCluster(**p,c);
+      b = SecondCluster.ClusterDissimilarity(**p)/SecondCluster.size();
       if(a==0 && b==0){
         result[c]=0;
       }
@@ -468,12 +469,12 @@ vector<double> ClusterSpace::Silhouette(MyVectorContainer &vectors){
         result[c] += b-a/(a>b?a:b);
     }
     //for center (if its part of the dataset)
-    vector_index medoid = Clusters[c].getMedoid();
-    if(medoid != -1){
-      a = Clusters[c].ClusterDissimilarity(vectors[medoid])/Clusters[c].size();
+    myvector* medoid = Clusters[c].getMedoid();
+    if(medoid != NULL){
+      a = Clusters[c].ClusterDissimilarity(*medoid)/Clusters[c].size();
       //find second nearest Cluster, and its avg dissimilarity
-      Cluster SecondCluster = SecondNearestCluster(vectors[medoid],c);
-      b = SecondCluster.ClusterDissimilarity(vectors[medoid])/SecondCluster.size();
+      Cluster SecondCluster = SecondNearestCluster(*medoid,c);
+      b = SecondCluster.ClusterDissimilarity(*medoid)/SecondCluster.size();
       result[c] += b-a/(a>b?a:b);
       result[c] /= members.size()+1;
     }

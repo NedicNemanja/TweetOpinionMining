@@ -117,16 +117,16 @@ HashTable::~HashTable(){
 
 
 /*Insert a new vector to the table*/
-void HashTable::Insert(MyVectorContainer &vectors,vector_index vindex){
-  unsigned int h = metric->Hash(vectors[vindex]);
+void HashTable::Insert(myvector* vector){
+  unsigned int h = metric->Hash(*vector);
   //cout << h << " ";
-  buckets[h].push_back(vindex);
+  buckets[h].push_back(vector);
 }
 
 /*Insert all elements of a vector to hashtable*/
 void HashTable::InsertVector(MyVectorContainer &vectors){
-  for(int i=0; i<vectors.size(); i++){
-    Insert(vectors,i);
+  for(auto it=vectors.begin(); it!=vectors.end(); it++){
+    Insert(&(*it));
   }
 }
 
@@ -149,12 +149,11 @@ Bucket HashTable::get_bucket_filtered(MyVectorContainer &vectors, myvector& q){
 
   Bucket result;
   std::vector<long int> g_of_q = metric->get_g(q);
-  for(vector_index vindex=0; vindex<bucket.size(); vindex++){
-      //p := vectors[vindex];
+  for(auto it=bucket.begin(); it!=bucket.end(); it++){
       //for ever p in bucket check g's with q
-      std::vector<long int> g_of_p = metric->get_g(vectors[vindex]);
+      std::vector<long int> g_of_p = metric->get_g(*(*it));
       if(vectorCompare(g_of_q,g_of_p) == true) //same g's
-        result.push_back(vindex);
+        result.push_back(*it);
   }
   return result;
 }
@@ -170,7 +169,7 @@ Bucket HashTable::get_bucket_filtered(myvector& q){
   std::vector<long int> g_of_q = metric->get_g(q);
   for(Bucket::iterator p=bucket.begin(); p != bucket.end(); p++){
       //for ever p check g's with q
-      std::vector<long int> g_of_p = metric->get_g(*p);
+      std::vector<long int> g_of_p = metric->get_g(**p);
       if(vectorCompare(g_of_q,g_of_p) == true) //same g's
         result.push_back(*p);
   }
@@ -209,9 +208,9 @@ int HashTable::get_hash(const myvector &p){
 
 /*Return all index to vectors of the bucket that are in the range of center.
 Returns only unassigned vectors indexes*/
-vector<vector_index> HashTable::RangeSearch(int b, myvector center,
-  double radius, MyVectorContainer &vectors,vector<bool> &AssignedVectorBitMap){
-  vector<vector_index> results;
+vector<myvector*> HashTable::RangeSearch(int b, myvector center,
+  double radius, MyVectorContainer &vectors,map<string,bool>&AssignedVectorBitMap){
+  vector<myvector*> results;
   //find corresponding bucket (and filter for g's in case of euclidean)
   Bucket bucket;
   if(metric->name != "euclidean")
@@ -221,8 +220,8 @@ vector<vector_index> HashTable::RangeSearch(int b, myvector center,
   //for each p in bucket
   double dist;
   for(auto v=bucket.begin(); v != bucket.end(); v++){
-    if(AssignedVectorBitMap[*v]) continue;  //already assigned
-    dist=metric->vectorDistance(center.begin(),center.end(),vectors[*v].begin());
+    if(AssignedVectorBitMap[(*v)->get_id()]) continue;  //already assigned
+    dist=metric->vectorDistance(center.begin(),center.end(),(*v)->begin());
     if( dist < radius){
       results.push_back(*v);
     }

@@ -3,11 +3,12 @@
 
 #include <list>
 #include <vector>
+#include <map>
 
 #include "myvector.hpp"
 #include "Metric.hpp"
 
-typedef std::vector<vector_index> Bucket;
+typedef std::vector<myvector*> Bucket;
 
 class HashTable
 {
@@ -33,13 +34,13 @@ class HashTable
     Metric* get_metric();
     /*Get the hash value for p*/
     int get_hash(const myvector &p);
-    void Insert(MyVectorContainer &vectors,vector_index vindex);
+    void Insert(myvector* v);
     void InsertVector(MyVectorContainer &vectors);
     void InitBuckets(int size);
     void PrintBuckets();
     /*Return all index to vectors of the bucket that are in the range of center*/
-    std::vector<vector_index> RangeSearch(int b, myvector center,double radius,
-      MyVectorContainer &vectors, std::vector<bool> &AssignedVectorBitMap);
+    Bucket RangeSearch(int b, myvector center,double radius,
+      MyVectorContainer&vectors,std::map<std::string,bool>&AssignedVectorBitMap);
 };
 
 unsigned int TableSize(std::string tabletype,std::string metric,int numvectors);

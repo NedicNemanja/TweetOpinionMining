@@ -67,13 +67,14 @@ int main(int argc, char** argv){
   vector<HashTable*> LSH_Hashtables(CmdArgs::L);
   for(int i=0; i<CmdArgs::L; i++){
     LSH_Hashtables[i]=new HashTable(Vectors,"cosine",CmdArgs::dimension,"lsh");
-    //LSH_Hashtables[i]->PrintBuckets();
+    LSH_Hashtables[i]->PrintBuckets();
   }
-  
+
 
   //Cleanup
   for(auto it=Tweets.begin(); it!=Tweets.end(); it++) delete (*it);
   for(auto it=Users.begin(); it!=Users.end(); it++) delete (*it);
+  for(auto it=LSH_Hashtables.begin(); it!=LSH_Hashtables.end(); it++) delete (*it);
   return OK;
 /*
   //Initialize Hashtables
