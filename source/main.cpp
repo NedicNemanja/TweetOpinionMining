@@ -53,15 +53,15 @@ int main(int argc, char** argv){
   for(auto user=Users.begin(); user!=Users.end(); user++)
     (*user)->CalcCryptoValues(CryptoNameMap);
   /*Turning crypto_values into myvector type for each user*/
-  vector<myvector> UserVectors;
+  vector<myvector*> UserVectors;
   for(auto it=Users.begin(); it!=Users.end(); it++){
-    myvector vector = (*it)->Vectorize(CryptoSet);
-    if(vector.size()==0){
+    myvector* vector = (*it)->Vectorize(CryptoSet);
+    if(vector==NULL){
       //remove users that didn't mention any crypto
       delete(*it);
       *it = NULL;
     }
-    else if(CoordSum(vector.begin(),vector.end())==0){
+    else if(isZeroVector(vector->begin(),vector->end())){
       //remove users that didn't mention any crypto
       delete(*it);
       *it = NULL;
@@ -76,12 +76,13 @@ int main(int argc, char** argv){
   //Initialize Hashtables
   vector<HashTable*> LSH_Hashtables(CmdArgs::L);
   for(int i=0; i<CmdArgs::L; i++){
-    LSH_Hashtables[i]=new HashTable(UserVectors,"cosine",CmdArgs::dimension,"lsh");
+    LSH_Hashtables[i]=new HashTable(UserVectors,"euclidean",CmdArgs::dimension,"lsh");
     //LSH_Hashtables[i]->PrintBuckets();
   }
+  //Rate unknown crypto values by NN CosineSimilarity
   for(auto it=Users.begin(); it!=Users.end(); it++){
     if(*it == NULL) continue;
-    (*it)->RateByNNSimilarity(UserVectors,LSH_Hashtables);
+    (*it)->RateByNNSimilarity(LSH_Hashtables,CryptoSet);
   }
 
   //Cleanup

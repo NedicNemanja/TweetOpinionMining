@@ -31,10 +31,10 @@ class User{
     double AverageValue();
     /*Create myvector using crypto_values,ordered as in CryptoSet.
     If there are unknown crypto_values use average value.*/
-    myvector Vectorize(std::set<std::string> CryptoSet);
+    myvector* Vectorize(std::set<std::string> CryptoSet);
     /*Calculate similarity to P NearetsNeighbors and set values of yet unknown
     cryptos according to NNs*/
-    void RateByNNSimilarity(std::vector<myvector>&,std::vector<HashTable*>&);
+    void RateByNNSimilarity(std::vector<HashTable*>&, std::set<std::string>&);
 };
 
 typedef std::map<std::string,User*> UserMap; //maps users by userid

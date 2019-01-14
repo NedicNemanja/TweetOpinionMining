@@ -1,7 +1,7 @@
 #include "User.hpp"
 #include "ReadInput.hpp"
 #include "LSH.hpp"
-
+#include "CosineSimilarity.hpp"
 #include <math.h>
 
 using namespace std;
@@ -90,10 +90,10 @@ double User::AverageValue(){
 /*Create myvector using crypto_values,ordered as in CryptoSet.
 If there are unknown crypto_values use average value.
 Values are normalised by subtracting average_value from each of them.*/
-myvector User::Vectorize(set<string> CryptoSet){
+myvector* User::Vectorize(set<string> CryptoSet){
   double average_value = AverageValue();
-  if(isnan(average_value))
-    return myvector();
+  if(isnan(average_value))  //if zero vector
+    return NULL;
   std::vector<double> myvalues(CryptoSet.size());
   int i=0;
   for(auto it=CryptoSet.begin(); it!=CryptoSet.end(); it++,i++){
@@ -108,15 +108,31 @@ myvector User::Vectorize(set<string> CryptoSet){
     }
   }
   vector = myvector(myvalues,userid);
-  return vector;
+  return &vector;
 }
 
-void User::RateByNNSimilarity(std::vector<myvector> &UserVectors,
-  std::vector<HashTable*> &LSH_Hashtables){
+void User::RateByNNSimilarity(std::vector<HashTable*> &LSH_Hashtables,
+  set<string> &CryptoSet){
+  //find nearest neighbors of this user
   std::vector<myvector*> nns = NearestNeighbors(LSH_Hashtables,vector,CmdArgs::NUM_NN);
-//  cout << userid << ": ";
-  //for(auto it=nns.begin(); it!=nns.end(); it++){
-  //  cout << (*it)->get_id() << " ";
-  //}
-//  cout << endl;
+  //calculate similarities to nns
+  std::vector<double> similarities(nns.size());
+  double sim_sum=0;
+  int i=0;
+  for(auto it=nns.begin(); it!=nns.end(); it++,i++){
+    similarities[i] = CosineVectorSimilarity(vector.begin(),vector.end(),(*it)->begin());
+    sim_sum += similarities[i];
+  }
+  //approximate unknown crypto values using similarities
+  int coord=0;
+  for(auto crypto=CryptoSet.begin(); crypto!=CryptoSet.end(); crypto++,coord++){
+    //rate only unknown crypto values
+    if(crypto_values.find(*crypto) == crypto_values.end())
+      continue;
+    double nn_ratings=0;
+    for(int i=0; i<nns.size(); i++)
+      nn_ratings += (similarities[i]*((*nns[i])[coord]));
+    if(sim_sum != 0)
+      vector[coord] = nn_ratings/sim_sum;
+  }
 }

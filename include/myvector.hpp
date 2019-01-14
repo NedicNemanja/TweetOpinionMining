@@ -22,6 +22,7 @@ class myvector {
     std::vector<coord> getCoords() const;
     std::vector<coord>::const_iterator begin() const;
     std::vector<coord>::const_iterator end() const;
+    coord& operator[](int i) {return values[i];};
 };
 
 typedef std::vector<myvector> MyVectorContainer;

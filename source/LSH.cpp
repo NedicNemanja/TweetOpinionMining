@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <float.h> //DBL_MAX
 
 #include "LSH.hpp"
 #include "utility.hpp"
@@ -10,7 +11,7 @@ vector<myvector*> NearestNeighbors(vector<HashTable*> &Hashtables, myvector &q,
 int num_of_nn){
   vector<pair<myvector*,double>> nns;
   vector<pair<myvector*,double>>::iterator furthest_nn;
-  double furthest_nn_dist;
+  double furthest_nn_dist = DBL_MAX;
 
   //for every Hashtable
   for(int i=0; i<Hashtables.size(); i++){
@@ -19,6 +20,7 @@ int num_of_nn){
     Metric* metric = Hashtables[i]->get_metric();
     //for each p in bucket
     for(Bucket::iterator p=bucket.begin(); p != bucket.end(); p++){
+      if(q.get_id() == (*p)->get_id()) continue;  //user cant be selfneighbor
       double distance = metric->vectorDistance(q.begin(),q.end(),(*p)->begin());
       if(nns.size()<num_of_nn){
         //there is free room for nns, just insert dont check distance

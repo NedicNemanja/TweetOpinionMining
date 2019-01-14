@@ -85,14 +85,13 @@ double Norm(Iter_T first, Iter_T last){
 };
 
 template<class Iter_T>
-double CoordSum(Iter_T first, Iter_T last){
-  double sum=0;
+double isZeroVector(Iter_T first, Iter_T last){
   while(first != last){
     //std::cout << *first << " ";
-    sum += *first;
+    if(*first != 0) return false;
     first++;
   }
-  return sum;
+  return true;
 }
 
 template <class T>

@@ -16,7 +16,7 @@ class HashTable
     std::vector<Bucket> buckets;
     Metric* metric;
   public:
-    HashTable(MyVectorContainer&,std::string,int dim, std::string);
+    HashTable(std::vector<myvector*>&,std::string,int dim, std::string);
     HashTable(MyVectorContainer&,std::string,int dim,int tsize,std::string);
     HashTable(int size, std::string metric_name, int dim, std::string);
     ~HashTable();
@@ -35,7 +35,7 @@ class HashTable
     /*Get the hash value for p*/
     int get_hash(const myvector &p);
     void Insert(myvector* v);
-    void InsertVector(MyVectorContainer &vectors);
+    void InsertVector(std::vector<myvector*> &vectors);
     void InitBuckets(int size);
     void PrintBuckets();
     /*Return all index to vectors of the bucket that are in the range of center*/

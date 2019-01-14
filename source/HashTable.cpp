@@ -31,7 +31,7 @@ unsigned int TableSize(string tabletype,string metric, int num_vectors){
 
 /*Use this constructor if you did not know the num of vectors and you stored
 them temporarily in a list. This will insert all vectors from the list.*/
-HashTable::HashTable(MyVectorContainer& vectors,string metric_name,int dimension,
+HashTable::HashTable(vector<myvector*>& vectors,string metric_name,int dimension,
   string tabletype)
 :tabletype(tabletype),buckets(TableSize(tabletype,metric_name,vectors.size()))
 {
@@ -56,65 +56,10 @@ HashTable::HashTable(MyVectorContainer& vectors,string metric_name,int dimension
   InsertVector(vectors);
 }
 
-//Same as before, but tablesize is set manually (used in hypercube)
-HashTable::HashTable(MyVectorContainer &vectors,string metric_name,int dimension,
-int tablesize,string tabletype)
-:tabletype(tabletype),buckets(tablesize)
-{
-  if(metric_name == "euclidean"){
-    if(tabletype=="lsh")
-      metric = new LSH::Euclidean(dimension, buckets.size());
-    else if(tabletype=="hypercube")
-      metric = new Hypercube::Euclidean(dimension, buckets.size());
-    else{
-      cout << "Unknown tabletype: " << tabletype << endl;
-      exit(UNKNOWN_METRIC);
-    }
-  }
-  else if("cosine"){
-    metric = new CosineSimilarity(dimension);
-  }
-  else{
-    cout << "Unknown metric: " << metric_name << endl;
-    exit(UNKNOWN_METRIC);
-  }
-  cout << "Creating HashTable with " << buckets.size() << "buckets"<< endl;
-  InsertVector(vectors);
-}
-
-/*Use this constructor if you know the size (num of vectors) for your HashTable
-before you create a temporary list to store the vectors.
-That way you can immediately HashTable::Insert them here*/
-HashTable::HashTable(int size, string metric_name, int dimension,string tabletype)
-:tabletype(tabletype),buckets(TableSize(tabletype,metric_name,size))
-{
-  if(metric_name == "euclidean"){
-    if(tabletype=="lsh")
-      metric = new LSH::Euclidean(dimension, buckets.size());
-    else if(tabletype=="hypercube")
-      metric = new Hypercube::Euclidean(dimension, buckets.size());
-    else{
-      cout << "Unknown tabletype: " << tabletype << endl;
-      exit(UNKNOWN_METRIC);
-    }
-  }
-  else if("cosine"){
-    metric = new CosineSimilarity(dimension);
-  }
-  else{
-    cout << "Unknown metric: " << metric_name << endl;
-    exit(UNKNOWN_METRIC);
-  }
-  cout << "Creating HashTable with " << buckets.size() << "buckets"<< endl;
-}
-
 HashTable::~HashTable(){
   //cout << "HashTable destroyed" << endl;
   delete metric;
 }
-
-
-
 
 /*Insert a new vector to the table*/
 void HashTable::Insert(myvector* vector){
@@ -124,9 +69,9 @@ void HashTable::Insert(myvector* vector){
 }
 
 /*Insert all elements of a vector to hashtable*/
-void HashTable::InsertVector(MyVectorContainer &vectors){
+void HashTable::InsertVector(vector<myvector*> &vectors){
   for(auto it=vectors.begin(); it!=vectors.end(); it++){
-    Insert(&(*it));
+    Insert(*it);
   }
 }
 
@@ -168,10 +113,10 @@ Bucket HashTable::get_bucket_filtered(myvector& q){
   Bucket result;
   std::vector<long int> g_of_q = metric->get_g(q);
   for(Bucket::iterator p=bucket.begin(); p != bucket.end(); p++){
-      //for ever p check g's with q
-      std::vector<long int> g_of_p = metric->get_g(**p);
-      if(vectorCompare(g_of_q,g_of_p) == true) //same g's
-        result.push_back(*p);
+    //for ever p check g's with q
+    std::vector<long int> g_of_p = metric->get_g(**p);
+    if(vectorCompare(g_of_q,g_of_p) == true) //same g's
+      result.push_back(*p);
   }
   return result;
 }
@@ -198,6 +143,10 @@ void HashTable::PrintBuckets(){
   cout << "Printing buckets" << endl;
   for(int i=0; i<buckets.size(); i++){
     cout << "bucket" << i << ":" << buckets[i].size() << endl;
+    /*for(auto it=buckets[i].begin(); it!=buckets[i].end(); it++){
+      cout << (*it)->get_id() << " ";
+    }
+    cout << endl;*/
   }
 }
 
