@@ -16,7 +16,15 @@ namespace CmdArgs{
     std::string OutFile;
     int validate;
     int NUM_NN; //num of nearest neighbors (default 20)
+    //from project2
+    std::string Metric;
+    std::string ConfFile;
+    int number_of_clusters,L,K;
+    int RANGESEARCH_ITERATIONS;
+    int HYPERCUBE_PROBES;
     int dimension;
+    double center_convergence_tolerance;
+    int max_iterations;
 };
 
 /*Parse cmd line arguments and read from cin any that are missing*/
@@ -116,6 +124,112 @@ map<string,string> ReadCryptos(ifstream &data){
   cout << "Found " << num_crypto << " different cryptocurrrencies." << endl;
   CmdArgs::dimension = num_crypto;
   return CryptoNameMap;
+}
+
+
+void ReadConfigurationFile(){
+  string filename;
+  cout << endl << "Provide .conf path: " << endl;
+  cin >> filename;
+
+  int clusters_flag=0, hash_func_flag=0, hashtables_flag=0, dimension_flag=0,
+  hypercube_probes_flag=0, rangesearch_iterations_flag=0,cc_tolerance_flag=0,
+  max_iterations_flag=0;
+  ifstream file = OpenInFile(filename);
+  string field_name;
+  while(!file.eof()){
+    file >> field_name;
+    if(field_name == "number_of_clusters:"){
+      if(!file.eof()){
+        file >> CmdArgs::number_of_clusters;
+        clusters_flag=1;
+        field_name.clear();
+        continue;
+      }
+    }
+    if(field_name == "number_of_hash_functions:"){
+      if(!file.eof()){
+        file >> CmdArgs::K;
+        hash_func_flag=1;
+        field_name.clear();
+        continue;
+      }
+    }
+    if(field_name == "number_of_hashtables:"){
+      if(!file.eof()){
+        file >> CmdArgs::L;
+        hashtables_flag=1;
+        field_name.clear();
+        continue;
+      }
+    }
+    if(field_name == "rangesearch_iterations:"){
+      if(!file.eof()){
+        file >> CmdArgs::RANGESEARCH_ITERATIONS;
+        rangesearch_iterations_flag=1;
+        field_name.clear();
+        continue;
+      }
+    }
+    if(field_name == "hypercube_probes:"){
+      if(!file.eof()){
+        file >> CmdArgs::HYPERCUBE_PROBES;
+        hypercube_probes_flag=1;
+        field_name.clear();
+        continue;
+      }
+    }
+    if(field_name == "center_convergence_tolerance:"){
+      if(!file.eof()){
+        file >> CmdArgs::center_convergence_tolerance;
+        cc_tolerance_flag=1;
+        field_name.clear();
+        continue;
+      }
+    }
+    if(field_name == "max_iterations:"){
+      if(!file.eof()){
+        file >> CmdArgs::max_iterations;
+        max_iterations_flag=1;
+        field_name.clear();
+        continue;
+      }
+    }
+    if(!file.eof()){
+      cerr << "Unknown argument in .conf: -" << field_name <<"-" << endl;
+      exit(UNKNOWN_CMDARGUMENT);
+    }
+  }
+  file.close();
+
+  //check that all is set, if not use default values
+  if(clusters_flag == 0){
+    cout << "Default number_of_clusters: 3" << endl;
+    CmdArgs::number_of_clusters = 3;
+  }
+  else
+    cout << "number_of_clusters: " << CmdArgs::number_of_clusters << endl;
+
+  if(hash_func_flag == 0 ){
+    cout << "Default number_of_hash_functions (K): 4" << endl;
+    CmdArgs::K=4;
+  }
+  else
+    cout << "number_of_hash_functions (K): " << CmdArgs::K << endl;
+
+  if(hashtables_flag == 0){
+    cout << "Default number_of_hashtables (L): 5" << endl;
+    CmdArgs::L=5;
+  }
+  else
+    cout << "number_of_hashtables (L): " << CmdArgs::L << endl;
+
+
+  if(hypercube_probes_flag==0 || max_iterations_flag==0 ||
+    rangesearch_iterations_flag==0 || cc_tolerance_flag==0){
+      cout << "Badness in Config file" << endl;
+      exit(BAD_CONFIG_FILE);
+  }
 }
 
 ifstream OpenInFile(string &filename){

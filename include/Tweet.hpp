@@ -8,7 +8,8 @@
 
 #include "ParsingCSV.hpp"
 
-#define alpha 15  //for tweet score normalisation
+//for tweet score normalisation
+#define ALPHA 15
 
 class Tweet{
     std::string userid;

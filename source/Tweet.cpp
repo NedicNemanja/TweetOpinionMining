@@ -28,7 +28,7 @@ void Tweet::Score(std::map<std::string,double> &lexicon){
   for(auto it=tokens.begin(); it!=tokens.end(); it++){
     total_score += lexicon[*it];
   }
-  score = total_score/sqrt(total_score*total_score+alpha);
+  score = total_score/sqrt(total_score*total_score+ALPHA);
 }
 
 double Tweet::getScore(){

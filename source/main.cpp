@@ -8,6 +8,7 @@
 #include "Tweet.hpp"
 #include "User.hpp"
 #include "myvector.hpp"
+#include "HashTable.hpp"
 
 using namespace std;
 
@@ -39,6 +40,9 @@ int main(int argc, char** argv){
   for(auto it=CryptoNameMap.begin(); it!=CryptoNameMap.end(); it++)
     CryptoSet.insert(it->second);
 
+  //open and read configuration file
+  ReadConfigurationFile();
+
   /************Vectorization of user sentiment towards CryptoCurrencies********/
   TweetScores(Tweets,Lexicon);  //Calc Tweet scores
   UserMap usermap;              //maps users by userid
@@ -59,6 +63,13 @@ int main(int argc, char** argv){
   cout << Vectors.size() << " Vectors refering to cryptocurrencies." << endl;
 
   /**********Finding Nearest Neighbors using LSH*******************************/
+  //Initialize Hashtables
+  vector<HashTable*> LSH_Hashtables(CmdArgs::L);
+  for(int i=0; i<CmdArgs::L; i++){
+    LSH_Hashtables[i]=new HashTable(Vectors,"cosine",CmdArgs::dimension,"lsh");
+    //LSH_Hashtables[i]->PrintBuckets();
+  }
+  
 
   //Cleanup
   for(auto it=Tweets.begin(); it!=Tweets.end(); it++) delete (*it);
