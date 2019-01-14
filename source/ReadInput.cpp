@@ -88,6 +88,18 @@ map<string,double> ReadLexicon(ifstream &data){
 
 vector<Tweet*> ReadDataset(ifstream &data){
   cout << endl << "Reading dataset from disk..." << endl;
+  //read number of NearestNeighbors (P)
+  string p;
+  data >> p;
+  if(p == "P:"){
+    data >> CmdArgs::NUM_NN;
+    string str;
+    getline(data,str);
+  }
+  else
+    CmdArgs::NUM_NN = 20;
+
+  //read tweets
   std::vector<Tweet*> Tweets;
   Tweet* tweet;
   while((tweet=GetTweet(data)) != NULL){

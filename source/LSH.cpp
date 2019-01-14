@@ -11,6 +11,7 @@ int num_of_nn){
   vector<pair<myvector*,double>> nns;
   vector<pair<myvector*,double>>::iterator furthest_nn;
   double furthest_nn_dist;
+
   //for every Hashtable
   for(int i=0; i<Hashtables.size(); i++){
     //find corresponding bucket (and filter for g's in case of euclidean)

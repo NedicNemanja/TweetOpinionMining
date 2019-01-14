@@ -25,4 +25,37 @@ class CosineSimilarity: public Metric{
                           std::vector<coord>::const_iterator first2);
 };
 
+template<class Iter_T, class Iter2_T>
+double CosineVectorDistance(Iter_T first, Iter_T last, Iter2_T first2) {
+  double ip = inner_product(first, last, first2, 0);
+  double norm1 = 0.0, norm2 = 0.0;
+  while(first != last){
+    norm1 += (*first)*(*first);  //sum of squares
+    norm2 += (*first2)*(*first2);
+    first++;
+    first2++;
+  }
+  double divisor = sqrt(norm1)*(sqrt(norm2));
+  if( divisor == 0)
+    exit(UNDEFINED_COSINE_ZERO_VECTOR);
+  double cos_similarity = ip/divisor;
+  return 1 - cos_similarity;
+};
+
+template<class Iter_T, class Iter2_T>
+double CosineVectorSimilarity(Iter_T first, Iter_T last, Iter2_T first2) {
+  double ip = inner_product(first, last, first2, 0);
+  double norm1 = 0.0, norm2 = 0.0;
+  while(first != last){
+    norm1 += (*first)*(*first);  //sum of squares
+    norm2 += (*first2)*(*first2);
+    first++;
+    first2++;
+  }
+  double divisor = sqrt(norm1)*(sqrt(norm2));
+  if( divisor == 0)
+    exit(UNDEFINED_COSINE_ZERO_VECTOR);
+  return ip/divisor;
+};
+
 #endif

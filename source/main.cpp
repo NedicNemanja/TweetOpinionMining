@@ -9,11 +9,12 @@
 #include "User.hpp"
 #include "myvector.hpp"
 #include "HashTable.hpp"
+#include "utility.hpp"
 
 using namespace std;
 
 int main(int argc, char** argv){
-  /*****************PREPROCESSING*************************************/
+  /*****************PREPROCESSING**********************************************/
   ParseArguments(argc,argv);
   //open and read Lexicon
   string lexicon_path;
@@ -43,7 +44,7 @@ int main(int argc, char** argv){
   //open and read configuration file
   ReadConfigurationFile();
 
-  /************Vectorization of user sentiment towards CryptoCurrencies********/
+  /************Vectorization of User sentiment towards CryptoCurrencies********/
   TweetScores(Tweets,Lexicon);  //Calc Tweet scores
   UserMap usermap;              //maps users by userid
   /*Assign each tweet to its user*/
@@ -52,24 +53,36 @@ int main(int argc, char** argv){
   for(auto user=Users.begin(); user!=Users.end(); user++)
     (*user)->CalcCryptoValues(CryptoNameMap);
   /*Turning crypto_values into myvector type for each user*/
-  vector<myvector> Vectors;
+  vector<myvector> UserVectors;
   for(auto it=Users.begin(); it!=Users.end(); it++){
     myvector vector = (*it)->Vectorize(CryptoSet);
-    if(vector.size() != 0){
-      //ignore vectors that didn't mention any crypto
-      Vectors.push_back(vector);
+    if(vector.size()==0){
+      //remove users that didn't mention any crypto
+      delete(*it);
+      *it = NULL;
+    }
+    else if(CoordSum(vector.begin(),vector.end())==0){
+      //remove users that didn't mention any crypto
+      delete(*it);
+      *it = NULL;
+    }
+    else{
+      UserVectors.push_back(vector);
     }
   }
-  cout << Vectors.size() << " Vectors refering to cryptocurrencies." << endl;
+  cout << UserVectors.size() << " Users(Vectors) with sentiment towards cryptocurrencies." << endl;
 
   /**********Finding Nearest Neighbors using LSH*******************************/
   //Initialize Hashtables
   vector<HashTable*> LSH_Hashtables(CmdArgs::L);
   for(int i=0; i<CmdArgs::L; i++){
-    LSH_Hashtables[i]=new HashTable(Vectors,"cosine",CmdArgs::dimension,"lsh");
-    LSH_Hashtables[i]->PrintBuckets();
+    LSH_Hashtables[i]=new HashTable(UserVectors,"cosine",CmdArgs::dimension,"lsh");
+    //LSH_Hashtables[i]->PrintBuckets();
   }
-
+  for(auto it=Users.begin(); it!=Users.end(); it++){
+    if(*it == NULL) continue;
+    (*it)->RateByNNSimilarity(UserVectors,LSH_Hashtables);
+  }
 
   //Cleanup
   for(auto it=Tweets.begin(); it!=Tweets.end(); it++) delete (*it);
@@ -115,5 +128,4 @@ int main(int argc, char** argv){
   }
   outfile.close();
 */
-  return OK;
 }

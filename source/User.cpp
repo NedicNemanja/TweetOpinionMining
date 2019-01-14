@@ -1,4 +1,7 @@
 #include "User.hpp"
+#include "ReadInput.hpp"
+#include "LSH.hpp"
+
 #include <math.h>
 
 using namespace std;
@@ -52,7 +55,7 @@ cryptocurrency/ies the tweet mentions*/
 void User::CalcCryptoValues(map<string,string> &CryptoNameMap){
   for(auto tweet=tweets.begin(); tweet!=tweets.end(); tweet++){
 
-    vector<std::string> tokens = (*tweet)->getTokens();
+    std::vector<std::string> tokens = (*tweet)->getTokens();
     for(auto token=tokens.begin(); token!=tokens.end(); token++){
 
       map<string,string>::iterator element;
@@ -91,7 +94,7 @@ myvector User::Vectorize(set<string> CryptoSet){
   double average_value = AverageValue();
   if(isnan(average_value))
     return myvector();
-  vector<double> myvalues(CryptoSet.size());
+  std::vector<double> myvalues(CryptoSet.size());
   int i=0;
   for(auto it=CryptoSet.begin(); it!=CryptoSet.end(); it++,i++){
     map<string,double>::iterator val;
@@ -104,5 +107,16 @@ myvector User::Vectorize(set<string> CryptoSet){
       myvalues[i] = val->second-average_value;
     }
   }
-  return myvector(myvalues,userid);
+  vector = myvector(myvalues,userid);
+  return vector;
+}
+
+void User::RateByNNSimilarity(std::vector<myvector> &UserVectors,
+  std::vector<HashTable*> &LSH_Hashtables){
+  std::vector<myvector*> nns = NearestNeighbors(LSH_Hashtables,vector,CmdArgs::NUM_NN);
+//  cout << userid << ": ";
+  //for(auto it=nns.begin(); it!=nns.end(); it++){
+  //  cout << (*it)->get_id() << " ";
+  //}
+//  cout << endl;
 }

@@ -73,31 +73,26 @@ double EuclideanVectorDistanceSquared(Iter_T first, Iter_T last, Iter2_T first2)
   return ret > 0.0 ? ret : 0.0;
 };
 
-template<class Iter_T, class Iter2_T>
-double CosineVectorDistance(Iter_T first, Iter_T last, Iter2_T first2) {
-  double ip = inner_product(first, last, first2, 0);
-  double norm1 = 0.0, norm2 = 0.0;
-  while(first != last){
-    norm1 += (*first)*(*first);  //sum of squares
-    norm2 += (*first2)*(*first2);
-    first++;
-    first2++;
-  }
-  double divisor = sqrt(norm1)*(sqrt(norm2));
-  if( divisor == 0)
-    exit(UNDEFINED_COSINE_ZERO_VECTOR);
-  double cos_similarity = ip/divisor;
-  return 1 - cos_similarity;
-};
-
 template<class Iter_T>
 double Norm(Iter_T first, Iter_T last){
   double norm = 0.0;
   while(first != last){
     //cout << *first << " ";
     norm += (*first)*(*first);  //sum of squares
+    first++;
   }
   return sqrt(norm);
+};
+
+template<class Iter_T>
+double CoordSum(Iter_T first, Iter_T last){
+  double sum=0;
+  while(first != last){
+    //std::cout << *first << " ";
+    sum += *first;
+    first++;
+  }
+  return sum;
 }
 
 template <class T>
@@ -116,17 +111,17 @@ void PrintList(std::list<T>& myvectors){
         // in the list
         iter++;
     }
-}
+};
 
 template<typename T>
 void printVector(const T& t) {
     std::copy(t.cbegin(), t.cend(), std::ostream_iterator<typename T::value_type>(std::cout, ", "));
-}
+};
 
 template<typename T>
 void printVectorInVector(const T& t) {
     std::for_each(t.cbegin(), t.cend(), printVector<typename T::value_type>);
-}
+};
 
 #define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
 #define PBWIDTH 60

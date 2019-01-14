@@ -3,6 +3,7 @@
 
 #include "Tweet.hpp"
 #include "myvector.hpp"
+#include "HashTable.hpp"
 
 #include <vector>
 #include <string>
@@ -13,6 +14,8 @@ class User{
     std::string userid;
     std::vector<Tweet*> tweets;
     std::map<std::string,double> crypto_values;
+    //vector holding sentiment toward cryptos
+    myvector vector;
   public:
     User();
     User(std::string &uid);
@@ -29,6 +32,9 @@ class User{
     /*Create myvector using crypto_values,ordered as in CryptoSet.
     If there are unknown crypto_values use average value.*/
     myvector Vectorize(std::set<std::string> CryptoSet);
+    /*Calculate similarity to P NearetsNeighbors and set values of yet unknown
+    cryptos according to NNs*/
+    void RateByNNSimilarity(std::vector<myvector>&,std::vector<HashTable*>&);
 };
 
 typedef std::map<std::string,User*> UserMap; //maps users by userid

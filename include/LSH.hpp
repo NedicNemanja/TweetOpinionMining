@@ -6,8 +6,8 @@
 #include "myvector.hpp"
 #include "HashTable.hpp"
 
-std::vector<std::pair<myvector,double>> NearestNeighbors(
+std::vector<myvector*> NearestNeighbors(
                                             std::vector<HashTable*> &Hashtables,
-                                            myvector &q);
+                                            myvector &q,int num_of_nn);
 
 #endif

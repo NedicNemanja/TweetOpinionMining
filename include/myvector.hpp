@@ -26,6 +26,4 @@ class myvector {
 
 typedef std::vector<myvector> MyVectorContainer;
 
-extern MyVectorContainer AllVectors;
-
 #endif

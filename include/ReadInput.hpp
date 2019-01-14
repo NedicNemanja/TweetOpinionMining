@@ -13,7 +13,7 @@ namespace CmdArgs{
     extern std::string InputFile;
     extern std::string OutFile;
     extern int validate;
-    extern int NUM_NN;
+    extern int NUM_NN;  //number of NearestNeighbors to look for
     //from project2
     extern std::string Metric;
     extern std::string ConfFile;
