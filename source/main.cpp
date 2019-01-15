@@ -14,6 +14,8 @@
 
 using namespace std;
 
+#define K 10 //number of clusters for 2A
+
 vector<string> CryptoOrder;  //how cryptos are ordered in myvectors
 
 void SetCryptoOrder(set<string>& CryptoSet){
@@ -74,18 +76,21 @@ int main(int argc, char** argv){
   /*Assign each tweet to its user*/
   vector<User*> Users = GroupTweetsByUser(usermap,Tweets);
 
-  vector<HashTable*> LSH_Hashtables(CmdArgs::L);
 
-  /*****************************************************************************
-  ****Rate unknown cryptos using Cosine-LSH based on other users uj ************
-  *****************************************************************************/
-  cout<<endl<<"Rate unknown cryptos using Cosine-LSH based on  Nearest Neighbors...";
   //Using tweet scores calculate crypto values for each user
   for(auto user=Users.begin(); user!=Users.end(); user++)
     (*user)->CalcCryptoValues(CryptoNameMap);
   //Turning crypto_values into myvector type for each user
   vector<myvector*> UserVectors = VectorizeUsers(Users,CryptoSet);
-  vector<User*> UsersCopy = CopyUsers(Users); //keep a copy before tampering
+  //keep a copy for each algorithm before tampering
+  vector<User*> Users1B = CopyUsers(Users);
+  vector<User*> Users2A = CopyUsers(Users);
+
+  vector<HashTable*> LSH_Hashtables(CmdArgs::L);
+  /***********************1.A***************************************************
+  ***&Rate unknown cryptos using Cosine-LSH based on other users uj ************
+  *****************************************************************************/
+  cout<<endl<<"Rate unknown cryptos using Cosine-LSH based on  Nearest Neighbors...";
   //Initialize Hashtables
   for(int i=0; i<CmdArgs::L; i++){
     LSH_Hashtables[i]=new HashTable(UserVectors,"cosine",CmdArgs::crypto_dimension,"lsh");
@@ -100,7 +105,7 @@ int main(int argc, char** argv){
   //cleanup
   for(auto it=LSH_Hashtables.begin(); it!=LSH_Hashtables.end(); it++) delete (*it);
 
-  /*****************************************************************************
+  /**********************1.B****************************************************
   *********Rate unknown cryptos using Cosine-LSH based on tweet Clusters(cj)****
   *****************************************************************************/
   cout<<endl<<"Rate unknown cryptos using Cosine-LSH based on tweet Clusters..." << endl;
@@ -131,68 +136,57 @@ int main(int argc, char** argv){
     //LSH_Hashtables[i]->PrintBuckets();
   }
   //Rate unknown crypto values by NN CosineSimilarity
-  for(auto it=UsersCopy.begin(); it!=UsersCopy.end(); it++){
+  for(auto it=Users1B.begin(); it!=Users1B.end(); it++){
     if(*it == NULL) continue;
     (*it)->RateByNNSimilarity(LSH_Hashtables,CryptoSet);
   }
   cout << "Done." << endl;
-  WriteOutput(outfile,Users,UsersCopy,usermap,CryptoSet);
+  WriteOutput(outfile,Users,Users1B,usermap,CryptoSet);
 
   //cleanup
   for(auto it=LSH_Hashtables_tweets.begin();it!=LSH_Hashtables_tweets.end();it++)
     delete (*it);
   for(auto it=LSH_Hashtables.begin();it!=LSH_Hashtables.end();it++)delete (*it);
   for(auto it=Users.begin(); it!=Users.end(); it++) delete (*it);
-  for(auto it=UsersCopy.begin(); it!=UsersCopy.end(); it++) delete (*it);
+  for(auto it=Users1B.begin(); it!=Users1B.end(); it++) delete (*it);
   for(auto it=VirtualUsers.begin(); it!=VirtualUsers.end(); it++) delete (*it);
 
-  /*****************************************************************************
-  *********************
+  /**********************2.A****************************************************
+  ***********Clustering Users and rating by EuclideanSimilarity in cluster******
   *****************************************************************************/
+  cout<<endl<<"2A Clustering Users and rating by EuclideanSimilarity in cluster"<< endl;
+  CmdArgs::number_of_clusters = K;
+  //transform users to myvectors
+  vector<myvector> myUsers2A = UserToMyvector(Users2A);
+  UserMap usermap2A = MapUsersByID(Users2A);
+  //Initialize Hashtables for users
+  for(int i=0; i<CmdArgs::L; i++){
+    LSH_Hashtables[i]=new HashTable(myUsers2A,"euclidean",CmdArgs::crypto_dimension,"lsh");
+    //LSH_Hashtables_tweets[i]->PrintBuckets();
+  }
+  //Create User Clusters
+  cout << endl << "\tClustering Vectorized Tweets...";
+  ClusterSpace CS_2A(myUsers2A,"Random Init","RangeSearchLSH","K-means");
+/*  CS_2A.RunClusteringAlgorithms(myUsers2A,LSH_Hashtables,NULL);
+  cout << "\tClustering Done." << endl;
+  //extract user clusters from myvector cluster space
+  vector<vector<User*>> UserClusters = UserCluster(CS_2A.getClusters(),usermap2A);
+  //Rate unknown crypto values by EuclideanSimilarity in each cluster
+  for(int i=0; i<UserClusters.size(); i++){
+    for(auto it=UserClusters[i].begin(); it!=UserClusters[i].end(); i++){
+      if(*it == NULL) continue;
+      (*it)->RateByClusterSimilarity(CS_2A.getCluster(i),CryptoSet);
+    }
+  }
+*/
 
+  cout << "Done." << endl;
+  //cleanup
+  for(auto it=Users2A.begin(); it!=Users2A.end(); it++) delete (*it);
+  for(auto it=LSH_Hashtables.begin();it!=LSH_Hashtables.end();it++)delete (*it);
 
   //Cleanup
   for(auto it=Tweets.begin(); it!=Tweets.end(); it++) delete (*it);
   outfile.close();
-
   return OK;
-/*
-  //Initialize Hashtables
-  vector<HashTable*> LSH_Hashtables(CmdArgs::L);
-  for(int i=0; i<CmdArgs::L; i++){
-    LSH_Hashtables[i]=new HashTable(AllVectors,CmdArgs::Metric,CmdArgs::dimension,"lsh");
-    //LSH_Hashtables[i]->PrintBuckets();
-  }
-  HashTable HypercubeHashtable(AllVectors,CmdArgs::Metric,CmdArgs::dimension,"hypercube");
-  //HypercubeHashtable.PrintBuckets();
-  //open outfile
-  if(CmdArgs::OutFile.empty()){
-    cout << endl << "Provide outfile path:" << endl;
-    cin >> CmdArgs::OutFile;
-  }
-  ofstream outfile = OpenOutFile(CmdArgs::OutFile);
-  /****************CLUSTERING**************************************************/
-/*  for(int i=0; i<12; i++){
-    //if(i%2 == 1) continue; //skip PAM
-    string init,assign,update;
-    int code = SetAlgorithmChoices(i,init,assign,update);
-    double clustering_time;
-    struct timespec start,end;
-    clock_gettime(CLOCK_MONOTONIC,&start);
-    //Initialize
-    ClusterSpace S(AllVectors,init,assign,update);
-    //Assign and Update
-    S.RunClusteringAlgorithms(AllVectors,LSH_Hashtables,&HypercubeHashtable);
-    //calculate time and write results to outfile
-    clock_gettime(CLOCK_MONOTONIC,&end);
-    double t=(end.tv_sec-start.tv_sec + (end.tv_nsec-start.tv_nsec)/1000000000.0);
-    cout << "\t" << "clustering_time:" << t << "sec" << endl;
-    WriteResult(outfile, code, S, t);
-  }
-  //cleanup
-  for(int i=0; i<CmdArgs::L; i++){
-    delete LSH_Hashtables[i];
-  }
-  outfile.close();
-*/
 }

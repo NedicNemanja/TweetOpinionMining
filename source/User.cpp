@@ -38,6 +38,10 @@ std::string User::getUserId(){
   return userid;
 }
 
+myvector User::getVector() const{
+  return vector;
+}
+
 extern vector<string> CryptoOrder;
 
 std::vector<std::string> User::getTopCryptos(int n){
@@ -187,6 +191,31 @@ void User::RateByNNSimilarity(std::vector<HashTable*> &LSH_Hashtables,
   }
 }
 
+void User::RateByClusterSimilarity(const Cluster& Cluster,set<string>&CryptoSet){
+  //find nearest neighbors of this user
+  std::vector<myvector*> nns = Cluster.getMembers();
+  //calculate similarities to nns
+  std::vector<double> similarities(nns.size());
+  double sim_sum=0;
+  int i=0;
+  for(auto it=nns.begin(); it!=nns.end(); it++,i++){
+    similarities[i] = CosineVectorSimilarity(vector.begin(),vector.end(),(*it)->begin());
+    sim_sum += similarities[i];
+  }
+  //approximate unknown crypto values using similarities
+  int coord=0;
+  for(auto crypto=CryptoSet.begin(); crypto!=CryptoSet.end(); crypto++,coord++){
+    //rate only unknown crypto values
+    if(crypto_values.find(*crypto) == crypto_values.end())
+      continue;
+    double nn_ratings=0;
+    for(int i=0; i<nns.size(); i++)
+      nn_ratings += (similarities[i]*((*nns[i])[coord]));
+    if(sim_sum != 0)
+      vector[coord] = nn_ratings/sim_sum;
+  }
+}
+
 vector<myvector*> VectorizeUsers(vector<User*> &Users, set<string> &CryptoSet){
   vector<myvector*> UserVectors;
   for(auto it=Users.begin(); it!=Users.end(); it++){
@@ -234,4 +263,38 @@ vector<User*> CopyUsers(vector<User*> &Users){
       CopiedUsers[i] = new User(*(Users[i]));
   }
   return CopiedUsers;
+}
+
+vector<myvector> UserToMyvector(vector<User*> Users){
+  vector<myvector> result;
+  for(auto it=Users.begin(); it!=Users.end(); it++){
+    if(*it == NULL) continue;
+    result.push_back((*it)->getVector());
+  }
+  return result;
+}
+
+/*From myvector* memebers of a cluster extact the userid
+(which is set to be the id of the vector), and usering the usermap and userid as
+the key find the user pointer. Mirroring the cluster of myvectors to User.*/
+vector<vector<User*>> UserCluster(const vector<Cluster>& Clusters, UserMap& usermap){
+  vector<vector<User*>> result(Clusters.size());
+  for(int i=0; i<Clusters.size(); i++){
+    vector<myvector*> members = Clusters[i].getMembers();
+    vector<User*> users(members.size());
+    for(int j=0; j<members.size(); j++){
+      users[j] = usermap[members[j]->get_id()];
+    }
+    result.push_back(users);
+  }
+  return result;
+}
+
+UserMap MapUsersByID(vector<User*>& Users){
+  UserMap map;
+  for(auto it=Users.begin(); it!=Users.end(); it++){
+    if(*it == NULL) continue;
+    map[(*it)->getUserId()] = *it;
+  }
+  return map;
 }

@@ -23,7 +23,7 @@ class ClusterSpace{
     std::vector<Cluster> getClusters() const;
     void Print();
     bool isCenter(const myvector &p);
-    Cluster getCluster(int i);
+    Cluster getCluster(int i) const;
     double MinDistanceToCenterSquared(myvector &v);
     double MinDistanceBetweenCenters();
     int NearestCenter(myvector &v);

@@ -90,13 +90,17 @@ bool ClusterSpace::isCenter(const myvector &p){
   return false;
 }
 
-Cluster ClusterSpace::getCluster(int i){
+Cluster ClusterSpace::getCluster(int i) const{
   return Clusters[i];
 }
 
 void ClusterSpace::Print(){
   for(auto it=Clusters.begin(); it!=Clusters.end(); it++){
     it->Print(cout);
+  }
+  auto centers = getCenters();
+  for(auto it=centers.begin(); it!=centers.end(); it++){
+    cout << it->get_id() << endl;
   }
 }
 

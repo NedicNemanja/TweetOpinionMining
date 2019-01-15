@@ -4,6 +4,7 @@
 #include "Tweet.hpp"
 #include "myvector.hpp"
 #include "HashTable.hpp"
+#include "Cluster.hpp"
 #include "ClusterSpace.hpp"
 
 #include <vector>
@@ -27,6 +28,7 @@ class User{
     std::vector<Tweet*> getTweets();
     std::string getUserId();
     std::vector<std::string> getTopCryptos(int n);
+    myvector getVector() const;
     /*Take the score of every user's tweet and add it to the
     cryptocurrency/ies the tweet mentions*/
     void CalcCryptoValues(std::map<std::string,std::string> &CryptoNameMap);
@@ -38,6 +40,7 @@ class User{
     /*Calculate similarity to P NearetsNeighbors and set values of yet unknown
     cryptos according to NNs*/
     void RateByNNSimilarity(std::vector<HashTable*>&, std::set<std::string>&);
+    void RateByClusterSimilarity(const Cluster&,std::set<std::string>&);
 };
 
 typedef std::map<std::string,User*> UserMap; //maps users by userid
@@ -54,4 +57,16 @@ std::vector<User*> CreateVirtualUsers(const std::vector<Cluster>& Clusters,
                                       std::map<std::string,std::string>&CrptoM);
 //crate new User objects by contant copied from old Users
 std::vector<User*> CopyUsers(std::vector<User*> &Users);
+
+std::vector<myvector> UserToMyvector(std::vector<User*> Users);
+
+std::vector<std::vector<User*>> UserCluster(ClusterSpace& CS);
+
+/*From myvector* memebers of a cluster extact the userid
+(which is set to be the id of the vector), and usering the usermap and userid as
+the key find the user pointer. Mirroring the cluster of myvectors to User.*/
+std::vector<std::vector<User*>> UserCluster(const std::vector<Cluster>&, UserMap&);
+
+UserMap MapUsersByID(std::vector<User*>& Users);
+
 #endif
