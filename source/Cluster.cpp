@@ -33,7 +33,7 @@ void Cluster::setCentroid(myvector c){
   centroid = c;
 }
 
-std::vector<myvector*> Cluster::getMembers(){
+std::vector<myvector*> Cluster::getMembers() const{
   return members;
 }
 

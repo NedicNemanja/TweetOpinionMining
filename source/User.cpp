@@ -160,9 +160,16 @@ vector<myvector*> VectorizeUsers(vector<User*> &Users, set<string> &CryptoSet){
   return UserVectors;
 }
 
+//create virutal users and assign them the tweets from clusters
 vector<User*> CreateVirtualUsers(const std::vector<Cluster> &Clusters,
   map<string,Tweet*>&tweet_id_map){
-  vector<User*> vusers;
-
+  vector<User*> vusers(Clusters.size());
+  for(int i=0; i<Clusters.size(); i++){
+    vusers[i] = new User;
+    vector<myvector*> cluster_members = Clusters[i].getMembers();
+    for(auto it=cluster_members.begin(); it!=cluster_members.end(); it++){
+      vusers[i]->addTweet(tweet_id_map[(*it)->get_id()]);
+    }
+  }
   return vusers;
 }

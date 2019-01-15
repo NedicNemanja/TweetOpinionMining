@@ -141,7 +141,7 @@ vector<HashTable*> HTables, HashTable* HypercubeTable){
     (this->*update_func)(vectors);
   }while(!ObjectiveFunctionCoverges(prevClusterSpaceImage) &&
           iteration<CmdArgs::max_iterations);
-  cout << "\t" << "iterations:" << iteration+1 << endl << endl;
+  cout << "\t" << "iterations:" << iteration+1 << endl;
 }
 
 /*Calculate by how much the centers have shifted since last iteration*/

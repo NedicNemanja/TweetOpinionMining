@@ -3,7 +3,7 @@ SOURCE_DIR = ./source
 OBJECT_DIR = ./object
 
 CC = g++
-CFLAGS=-I$(INCLUDE_DIR) -g -fmax-errors=1 -lm
+CFLAGS=-I$(INCLUDE_DIR) -O3 -fmax-errors=1 -lm
 OUT = recommendation
 
 _DEPS = Cluster.hpp ClusterSpace.hpp CosineSimilarity.hpp ErrorCodes.hpp HashTable.hpp HypercubeEuclidean.hpp LSH.hpp LSHEuclidean.hpp Metric.hpp myvector.hpp ParsingCSV.hpp ReadInput.hpp Tweet.hpp User.hpp utility.hpp

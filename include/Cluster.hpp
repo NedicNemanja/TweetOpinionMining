@@ -22,7 +22,7 @@ class Cluster{
     void setMedoid(myvector*);
     void setCentroid(myvector);
     myvector* setMedoid();
-    std::vector<myvector*> getMembers();
+    std::vector<myvector*> getMembers() const;
     void Print(std::ostream &out);
     int size();
     void AddVector(myvector* vindex);

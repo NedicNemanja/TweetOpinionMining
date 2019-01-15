@@ -46,6 +46,7 @@ std::vector<User*> GroupTweetsByUser(UserMap &usermap, std::vector<Tweet*> &);
 
 std::vector<myvector*> VectorizeUsers(std::vector<User*>&,std::set<std::string>&);
 
+//create virutal users and assign them the tweets from clusters
 std::vector<User*> CreateVirtualUsers(const std::vector<Cluster>&,std::map<std::string,Tweet*>&);
 
 #endif
