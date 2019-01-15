@@ -64,15 +64,18 @@ int main(int argc, char** argv){
   UserMap usermap;              //maps users by userid
   /*Assign each tweet to its user*/
   vector<User*> Users = GroupTweetsByUser(usermap,Tweets);
-  /*Using tweet scores calculate crypto values for each user*/
+  vector<User*> UsersCopy = CopyUsers(Users); //keep a copy before tampering
+  vector<HashTable*> LSH_Hashtables(CmdArgs::L);
+
+  /*****************************************************************************
+  ****Rate unknown cryptos using Cosine-LSH based on other users uj ************
+  *****************************************************************************/
+  cout<<endl<<"Rate unknown cryptos using Cosine-LSH based on  Nearest Neighbors...";
+  //Using tweet scores calculate crypto values for each user
   for(auto user=Users.begin(); user!=Users.end(); user++)
     (*user)->CalcCryptoValues(CryptoNameMap);
-  /*Turning crypto_values into myvector type for each user*/
+  //Turning crypto_values into myvector type for each user
   vector<myvector*> UserVectors = VectorizeUsers(Users,CryptoSet);
-
-  vector<HashTable*> LSH_Hashtables(CmdArgs::L);
-  /**********Rate unknown cryptos using Nearest Neighbors with LSH*************/
-  cout << endl << "Rate unknown cryptos using Nearest Neighbors with LSH...";
   //Initialize Hashtables
   for(int i=0; i<CmdArgs::L; i++){
     LSH_Hashtables[i]=new HashTable(UserVectors,"cosine",CmdArgs::crypto_dimension,"lsh");
@@ -86,32 +89,56 @@ int main(int argc, char** argv){
   cout << "Done." << endl;
   //cleanup
   for(auto it=LSH_Hashtables.begin(); it!=LSH_Hashtables.end(); it++) delete (*it);
-  /***********Rate unknown cryptos using Clusters******************************/
-  //Initialize Hashtables
+  for(auto it=Users.begin(); it!=Users.end(); it++) delete (*it);
+
+  /*****************************************************************************
+  *********Rate unknown cryptos using Cosine-LSH based on tweet Clusters(cj)****
+  *****************************************************************************/
+  cout<<endl<<"Rate unknown cryptos using Cosine-LSH based on tweet Clusters...";
+  //Initialize Hashtables for tweets
+  vector<HashTable*> LSH_Hashtables_tweets(CmdArgs::L);
   for(int i=0; i<CmdArgs::L; i++){
-    LSH_Hashtables[i]=new HashTable(VectorizedTweets,"euclidean",
-                                    CmdArgs::tweet_dimension,"lsh");
+    LSH_Hashtables_tweets[i]
+      =new HashTable(VectorizedTweets,"cosine",CmdArgs::tweet_dimension,"lsh");
+    //LSH_Hashtables_tweets[i]->PrintBuckets();
+  }
+  //Create VectorizedTweet Clusters
+  cout << endl << "\tClustering Vectorized Tweets...";
+  ClusterSpace S(VectorizedTweets,"Random Init","RangeSearchLSH","K-means");
+  S.RunClusteringAlgorithms(VectorizedTweets,LSH_Hashtables_tweets,NULL);
+  cout << "\tClustering Done." << endl;
+  //corelate vectorizedtweets to tweets by id
+  map<string,Tweet*> tweet_id_map= MapTweetsById(Tweets);
+  //now use tweet clusters to create virual users and calc their crypto values
+  vector<User*> VirtualUsers = CreateVirtualUsers(S.getClusters(),tweet_id_map,CryptoNameMap);
+  //turning crypto_values into myvector type for each virtual user
+  vector<myvector*> VirtualUserVectors = VectorizeUsers(UsersCopy,CryptoSet);
+  //Initialize Hashtables for VirtualUsers
+  for(int i=0; i<CmdArgs::L; i++){
+    LSH_Hashtables[i]
+    =new HashTable(VirtualUserVectors,"cosine",CmdArgs::crypto_dimension,"lsh");
     //LSH_Hashtables[i]->PrintBuckets();
   }
-  //Create Tweet Clusters
-  cout << endl << "Clustering Vectorized Tweets...";
-  ClusterSpace S(VectorizedTweets,"Random Init","RangeSearchLSH","K-means");
-  S.RunClusteringAlgorithms(VectorizedTweets,LSH_Hashtables,NULL);
+  //Rate unknown crypto values by NN CosineSimilarity
+  for(auto it=UsersCopy.begin(); it!=UsersCopy.end(); it++){
+    if(*it == NULL) continue;
+    (*it)->RateByNNSimilarity(LSH_Hashtables,CryptoSet);
+  }
   cout << "Done." << endl;
-  //corelate vectorizedtweet-tweet by id
-  map<string,Tweet*> tweet_id_map= MapTweetsById(Tweets);
-
-  //now use tweet clusters to create virualusers with cj vectors whose crypto_values are sum of tweet sentiment towards cryptos
-  vector<User*> VirtualUsers = CreateVirtualUsers(S.getClusters(),tweet_id_map);
-
   //cleanup
-  for(auto it=LSH_Hashtables.begin(); it!=LSH_Hashtables.end(); it++) delete (*it);
+  for(auto it=LSH_Hashtables_tweets.begin();it!=LSH_Hashtables_tweets.end();it++)
+    delete (*it);
+  for(auto it=LSH_Hashtables.begin();it!=LSH_Hashtables.end();it++)delete (*it);
   for(auto it=VirtualUsers.begin(); it!=VirtualUsers.end(); it++) delete (*it);
+  for(auto it=UsersCopy.begin(); it!=UsersCopy.end(); it++) delete (*it);
+
+  /*****************************************************************************
+  *********************
+  *****************************************************************************/
 
 
   //Cleanup
   for(auto it=Tweets.begin(); it!=Tweets.end(); it++) delete (*it);
-  for(auto it=Users.begin(); it!=Users.end(); it++) delete (*it);
 
   return OK;
 /*

@@ -13,6 +13,9 @@ User::User(){}
 User::User(string &uid)
 :userid(uid){}
 
+User::User(const User& u)
+:userid(u.userid),tweets(u.tweets),crypto_values(u.crypto_values),vector(u.vector){}
+
 User::~User(){}
 
 void User::addTweet(Tweet* tweet){
@@ -113,6 +116,7 @@ myvector* User::Vectorize(set<string> CryptoSet){
   return &vector;
 }
 
+//rate unkown cryptos by neraest neighbor crypto_scores and their similarity
 void User::RateByNNSimilarity(std::vector<HashTable*> &LSH_Hashtables,
   set<string> &CryptoSet){
   //find nearest neighbors of this user
@@ -156,20 +160,31 @@ vector<myvector*> VectorizeUsers(vector<User*> &Users, set<string> &CryptoSet){
     else{
       UserVectors.push_back(vector);
     }
-}
+  }
   return UserVectors;
 }
 
 //create virutal users and assign them the tweets from clusters
 vector<User*> CreateVirtualUsers(const std::vector<Cluster> &Clusters,
-  map<string,Tweet*>&tweet_id_map){
+  map<string,Tweet*>&tweet_id_map, map<string,string> &CryptoNameMap){
   vector<User*> vusers(Clusters.size());
   for(int i=0; i<Clusters.size(); i++){
     vusers[i] = new User;
     vector<myvector*> cluster_members = Clusters[i].getMembers();
     for(auto it=cluster_members.begin(); it!=cluster_members.end(); it++){
+      if(tweet_id_map.find((*it)->get_id()) == tweet_id_map.end())
+        exit(TWEET_NOT_IN_MAP);
       vusers[i]->addTweet(tweet_id_map[(*it)->get_id()]);
     }
+    vusers[i]->CalcCryptoValues(CryptoNameMap);
   }
   return vusers;
+}
+
+vector<User*> CopyUsers(vector<User*> &Users){
+  vector<User*> CopiedUsers(Users.size());
+  for(int i=0; i<Users.size(); i++){
+    CopiedUsers[i] = new User(*(Users[i]));
+  }
+  return CopiedUsers;
 }

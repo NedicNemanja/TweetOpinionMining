@@ -11,6 +11,8 @@
 //FROM:
 // stackoverflow.com/questions/1120140/how-can-i-read-and-parse-csv-files-in-c
 
+extern char DELIMETER;
+
 class CSVRow
 {
     public:
@@ -31,7 +33,7 @@ class CSVRow
             std::string         cell;
 
             m_data.clear();
-            while(std::getline(lineStream, cell, '\t'))
+            while(std::getline(lineStream, cell, DELIMETER))
             {
                 m_data.push_back(cell);
             }

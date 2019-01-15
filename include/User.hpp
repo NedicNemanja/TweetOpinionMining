@@ -20,6 +20,7 @@ class User{
   public:
     User();
     User(std::string &uid);
+    User(const User& user);
     ~User();
     void addTweet(Tweet* tweet);
     void print();
@@ -47,6 +48,9 @@ std::vector<User*> GroupTweetsByUser(UserMap &usermap, std::vector<Tweet*> &);
 std::vector<myvector*> VectorizeUsers(std::vector<User*>&,std::set<std::string>&);
 
 //create virutal users and assign them the tweets from clusters
-std::vector<User*> CreateVirtualUsers(const std::vector<Cluster>&,std::map<std::string,Tweet*>&);
-
+std::vector<User*> CreateVirtualUsers(const std::vector<Cluster>& Clusters,
+                                      std::map<std::string,Tweet*>& tweetIDmap,
+                                      std::map<std::string,std::string>&CrptoM);
+//crate new User objects by contant copied from old Users
+std::vector<User*> CopyUsers(std::vector<User*> &Users);
 #endif

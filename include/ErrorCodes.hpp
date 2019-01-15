@@ -11,6 +11,7 @@ typedef enum ERRORCODE { OK=0,
                                                 //ctor is poinless and undefined
                                                 //don't use it for data that has
                   BAD_CONFIG_FILE,
+                  TWEET_NOT_IN_MAP,
 } ERRORCODE;
 
 #endif

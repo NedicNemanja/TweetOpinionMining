@@ -110,6 +110,8 @@ vector<Tweet*> ReadDataset(ifstream &data){
 }
 
 MyVectorContainer ReadVectorizedTweets(ifstream &data){
+  char prev_delimeter = DELIMETER;
+  DELIMETER = ',';
   CmdArgs::tweet_dimension = FindDimension(data);
   cout << endl << "Reading dataset from disk..." << endl;
   //read coords from input and initialize vectors
@@ -119,6 +121,7 @@ MyVectorContainer ReadVectorizedTweets(ifstream &data){
   while(GetVector(data, coords, id, CmdArgs::tweet_dimension)){
       vectors.push_back(myvector(coords,id));
   }
+  DELIMETER = prev_delimeter;
   return vectors;
 }
 
