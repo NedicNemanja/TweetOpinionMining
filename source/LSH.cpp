@@ -4,13 +4,13 @@
 #include "LSH.hpp"
 #include "utility.hpp"
 #include "Metric.hpp"
+#include "myvector.hpp"
 
 using namespace std;
 
 vector<myvector*> NearestNeighbors(vector<HashTable*> &Hashtables, myvector &q,
 int num_of_nn){
   vector<pair<myvector*,double>> nns;
-  vector<pair<myvector*,double>>::iterator furthest_nn;
   double furthest_nn_dist = DBL_MAX;
 
   //for every Hashtable
@@ -23,23 +23,27 @@ int num_of_nn){
       if(q.get_id() == (*p)->get_id()) continue;  //user cant be selfneighbor
       double distance = metric->vectorDistance(q.begin(),q.end(),(*p)->begin());
       if(nns.size()<num_of_nn){
-        //there is free room for nns, just insert dont check distance
-        nns.push_back(pair<myvector*,double>(*p,distance));
+        /*there is free room for nns, just insert dont check distance*/
+        nns.push_back(pair<myvector*,double>(*p,distance)); //insert element
+        //reorder elements to keep heap property
+        push_heap(nns.begin(), nns.end(), [](pair<myvector*,double>&a,
+                  pair<myvector*,double>&b){return a.second<b.second;});
         if(distance < furthest_nn_dist){
           furthest_nn_dist = distance;
-          furthest_nn = nns.end()-1;
         }
       }
       else{
         if(distance < furthest_nn_dist){
           /*vector full we must discard the furthest neighbor*/
-          //replace furthest_nn with p
-          *furthest_nn = pair<myvector*,double>(*p,distance);
-          //find new furthest_nn
-          auto furthest_nn = max_element(nns.begin(),nns.end(),
-          [](auto &left, auto &right) {return left.second < right.second;});
+          pop_heap(nns.begin(),nns.end());  //reorder elements
+          nns.pop_back();                   //remove max dist element
+          //insert new neighbor
+          nns.push_back(pair<myvector*,double>(*p,distance));
+          //reorder elements
+          push_heap(nns.begin(), nns.end(),[](pair<myvector*,double>&a,
+                    pair<myvector*,double>&b){return a.second<b.second;});
           //update furthest_nn_dist
-          furthest_nn_dist = furthest_nn->second;
+          furthest_nn_dist = distance;
         }
       }
     }

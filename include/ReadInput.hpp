@@ -20,7 +20,8 @@ namespace CmdArgs{
     extern int number_of_clusters,L,K;
     extern int RANGESEARCH_ITERATIONS;
     extern int HYPERCUBE_PROBES;
-    extern int dimension;
+    extern int crypto_dimension;
+    extern int tweet_dimension;
     extern double center_convergence_tolerance;
     extern int max_iterations;
 };
@@ -29,7 +30,17 @@ namespace CmdArgs{
 void ParseArguments(int argc, char** argv);
 
 std::map<std::string,double> ReadLexicon(std::ifstream &data);
+
 std::vector<Tweet*> ReadDataset(std::ifstream &data);
+
+MyVectorContainer ReadVectorizedTweets(std::ifstream &data);
+
+//read coordinates of a vector and return true for success, else false
+bool GetVector(std::ifstream &data,std::vector<coord> &coords,std::string&,int);
+
+//Check the first vector and find its dimension
+int FindDimension(std::ifstream &data);
+
 /*Returns a map that maps all cryptocurrency names/slangs to the
 subsquent crypto name. In the file each line concerns a different cryptocurrency
 and the 5th column contains its full/real name, if the 5th column is absent the

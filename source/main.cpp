@@ -16,6 +16,13 @@ using namespace std;
 int main(int argc, char** argv){
   /*****************PREPROCESSING**********************************************/
   ParseArguments(argc,argv);
+  //open outfile
+  if(CmdArgs::OutFile.empty()){
+    cout << endl << "Provide outfile path:" << endl;
+    cin >> CmdArgs::OutFile;
+  }
+  ofstream outfile = OpenOutFile(CmdArgs::OutFile);
+
   //open and read Lexicon
   string lexicon_path;
   cout << endl << "Provide Lexicon path:" << endl;
@@ -44,7 +51,15 @@ int main(int argc, char** argv){
   //open and read configuration file
   ReadConfigurationFile();
 
-  /************Vectorization of User sentiment towards CryptoCurrencies********/
+  //open and read vectorized tweets file
+  string vtweets_path;
+  cout << endl << "Provide vectorized tweets file path:" << endl;
+  cin >> vtweets_path;
+  ifstream vtweets = OpenInFile(vtweets_path);
+  vector<myvector> VectorizedTweets = ReadVectorizedTweets(vtweets);
+  vtweets.close();
+
+  /**Vectorization of User sentiment by scoring their tweets and normalizing***/
   TweetScores(Tweets,Lexicon);  //Calc Tweet scores
   UserMap usermap;              //maps users by userid
   /*Assign each tweet to its user*/
@@ -53,30 +68,14 @@ int main(int argc, char** argv){
   for(auto user=Users.begin(); user!=Users.end(); user++)
     (*user)->CalcCryptoValues(CryptoNameMap);
   /*Turning crypto_values into myvector type for each user*/
-  vector<myvector*> UserVectors;
-  for(auto it=Users.begin(); it!=Users.end(); it++){
-    myvector* vector = (*it)->Vectorize(CryptoSet);
-    if(vector==NULL){
-      //remove users that didn't mention any crypto
-      delete(*it);
-      *it = NULL;
-    }
-    else if(isZeroVector(vector->begin(),vector->end())){
-      //remove users that didn't mention any crypto
-      delete(*it);
-      *it = NULL;
-    }
-    else{
-      UserVectors.push_back(vector);
-    }
-  }
-  cout << UserVectors.size() << " Users(Vectors) with sentiment towards cryptocurrencies." << endl;
+  vector<myvector*> UserVectors = VectorizeUsers(Users,CryptoSet);
 
-  /**********Finding Nearest Neighbors using LSH*******************************/
-  //Initialize Hashtables
   vector<HashTable*> LSH_Hashtables(CmdArgs::L);
+  /**********Rate unknown cryptos using Nearest Neighbors with LSH*************/
+  cout << endl << "Rate unknown cryptos using Nearest Neighbors with LSH...";
+  //Initialize Hashtables
   for(int i=0; i<CmdArgs::L; i++){
-    LSH_Hashtables[i]=new HashTable(UserVectors,"euclidean",CmdArgs::dimension,"lsh");
+    LSH_Hashtables[i]=new HashTable(UserVectors,"cosine",CmdArgs::crypto_dimension,"lsh");
     //LSH_Hashtables[i]->PrintBuckets();
   }
   //Rate unknown crypto values by NN CosineSimilarity
@@ -84,11 +83,36 @@ int main(int argc, char** argv){
     if(*it == NULL) continue;
     (*it)->RateByNNSimilarity(LSH_Hashtables,CryptoSet);
   }
+  cout << "Done." << endl;
+  //cleanup
+  for(auto it=LSH_Hashtables.begin(); it!=LSH_Hashtables.end(); it++) delete (*it);
+  /***********Rate unknown cryptos using Clusters******************************/
+  //Initialize Hashtables
+  for(int i=0; i<CmdArgs::L; i++){
+    LSH_Hashtables[i]=new HashTable(VectorizedTweets,"euclidean",
+                                    CmdArgs::tweet_dimension,"lsh");
+    //LSH_Hashtables[i]->PrintBuckets();
+  }
+  //Create Tweet Clusters
+  cout << endl << "Clustering Vectorized Tweets...";
+  ClusterSpace S(VectorizedTweets,"Random Init","RangeSearchLSH","K-means");
+  S.RunClusteringAlgorithms(VectorizedTweets,LSH_Hashtables,NULL);
+  cout << "Done." << endl;
+  //corelate vectorizedtweet-tweet by id
+  map<string,Tweet*> tweet_id_map= MapTweetsById(Tweets);
+
+  //now use tweet clusters to create virualusers with cj vectors whose crypto_values are sum of tweet sentiment towards cryptos
+  vector<User*> VirtualUsers = CreateVirtualUsers(S.getClusters(),tweet_id_map);
+
+  //cleanup
+  for(auto it=LSH_Hashtables.begin(); it!=LSH_Hashtables.end(); it++) delete (*it);
+  for(auto it=VirtualUsers.begin(); it!=VirtualUsers.end(); it++) delete (*it);
+
 
   //Cleanup
   for(auto it=Tweets.begin(); it!=Tweets.end(); it++) delete (*it);
   for(auto it=Users.begin(); it!=Users.end(); it++) delete (*it);
-  for(auto it=LSH_Hashtables.begin(); it!=LSH_Hashtables.end(); it++) delete (*it);
+
   return OK;
 /*
   //Initialize Hashtables

@@ -5,7 +5,6 @@
 #include <random>
 
 using namespace std;
-using CmdArgs::K;
 
 CosineSimilarity::CosineSimilarity(int dim)
 :Metric("cosine"),dimension(dim),r_vectors(CmdArgs::K){

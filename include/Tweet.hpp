@@ -35,4 +35,6 @@ Tweet* GetTweet(std::ifstream &data);
 //cals tweet scores
 void TweetScores(std::vector<Tweet*>&, std::map<std::string,double>&);
 
+std::map<std::string,Tweet*> MapTweetsById(std::vector<Tweet*> Tweets);
+
 #endif

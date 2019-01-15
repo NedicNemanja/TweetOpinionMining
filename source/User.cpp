@@ -2,6 +2,8 @@
 #include "ReadInput.hpp"
 #include "LSH.hpp"
 #include "CosineSimilarity.hpp"
+#include "utility.hpp"
+
 #include <math.h>
 
 using namespace std;
@@ -135,4 +137,32 @@ void User::RateByNNSimilarity(std::vector<HashTable*> &LSH_Hashtables,
     if(sim_sum != 0)
       vector[coord] = nn_ratings/sim_sum;
   }
+}
+
+vector<myvector*> VectorizeUsers(vector<User*> &Users, set<string> &CryptoSet){
+  vector<myvector*> UserVectors;
+  for(auto it=Users.begin(); it!=Users.end(); it++){
+    myvector* vector = (*it)->Vectorize(CryptoSet);
+    if(vector==NULL){
+      //remove users that didn't mention any crypto
+      delete(*it);
+      *it = NULL;
+    }
+    else if(isZeroVector(vector->begin(),vector->end())){
+      //remove users that didn't mention any crypto
+      delete(*it);
+      *it = NULL;
+    }
+    else{
+      UserVectors.push_back(vector);
+    }
+}
+  return UserVectors;
+}
+
+vector<User*> CreateVirtualUsers(const std::vector<Cluster> &Clusters,
+  map<string,Tweet*>&tweet_id_map){
+  vector<User*> vusers;
+
+  return vusers;
 }

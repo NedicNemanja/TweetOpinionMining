@@ -20,6 +20,7 @@ class ClusterSpace{
     ClusterSpace(MyVectorContainer&, std::string, std::string, std::string);
     ~ClusterSpace();
     std::vector<myvector> getCenters();
+    std::vector<Cluster> getClusters() const;
     void Print();
     bool isCenter(const myvector &p);
     Cluster getCluster(int i);

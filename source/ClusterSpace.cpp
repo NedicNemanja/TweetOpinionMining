@@ -76,6 +76,11 @@ vector<myvector> ClusterSpace::getCenters(){
   return result;
 }
 
+std::vector<Cluster> ClusterSpace::getClusters() const{
+  return Clusters;
+}
+
+
 bool ClusterSpace::isCenter(const myvector &p){
   for(auto it=Clusters.begin(); it!=Clusters.end(); it++){
     if(p.get_id() == it->getCenter().get_id()){ //if same id as center
@@ -287,7 +292,7 @@ void ClusterSpace::NearestCenterRangeAssign(Bucket bucket,double radius,
 void ClusterSpace::K_means(MyVectorContainer &vectors){
   //for every cluster
   for(auto cluster=Clusters.begin(); cluster!=Clusters.end(); cluster++){
-    vector<coord> mean(CmdArgs::dimension,0);
+    vector<coord> mean(CmdArgs::tweet_dimension,0);
     vector<myvector*> members = cluster->getMembers();
     //add all members to mean
     for(auto member=members.begin(); member!=members.end(); member++){

@@ -4,6 +4,7 @@
 #include "Tweet.hpp"
 #include "myvector.hpp"
 #include "HashTable.hpp"
+#include "ClusterSpace.hpp"
 
 #include <vector>
 #include <string>
@@ -42,5 +43,9 @@ typedef std::map<std::string,User*> UserMap; //maps users by userid
 /*Assign each tweet to its user and return all users (creates Users).
 Ignore those that dont mention any crypto currencies.*/
 std::vector<User*> GroupTweetsByUser(UserMap &usermap, std::vector<Tweet*> &);
+
+std::vector<myvector*> VectorizeUsers(std::vector<User*>&,std::set<std::string>&);
+
+std::vector<User*> CreateVirtualUsers(const std::vector<Cluster>&,std::map<std::string,Tweet*>&);
 
 #endif

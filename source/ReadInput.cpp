@@ -22,7 +22,8 @@ namespace CmdArgs{
     int number_of_clusters,L,K;
     int RANGESEARCH_ITERATIONS;
     int HYPERCUBE_PROBES;
-    int dimension;
+    int crypto_dimension;
+    int tweet_dimension;
     double center_convergence_tolerance;
     int max_iterations;
 };
@@ -108,6 +109,51 @@ vector<Tweet*> ReadDataset(ifstream &data){
   return Tweets;
 }
 
+MyVectorContainer ReadVectorizedTweets(ifstream &data){
+  CmdArgs::tweet_dimension = FindDimension(data);
+  cout << endl << "Reading dataset from disk..." << endl;
+  //read coords from input and initialize vectors
+  string id;
+  vector<coord> coords(CmdArgs::tweet_dimension);
+  vector<myvector> vectors;
+  while(GetVector(data, coords, id, CmdArgs::tweet_dimension)){
+      vectors.push_back(myvector(coords,id));
+  }
+  return vectors;
+}
+
+//read coordinates of a vector and return true for success, else false
+bool GetVector(ifstream &data,vector<coord> &coords, string &id, int dim){
+  //read id
+  CSVRow row;
+  int row_index=0;
+  data >> row;
+  if(data.eof()) return false;
+  id = row[row_index++];
+  //read coords
+  for(int i=0; i<dim; i++){
+    coords.at(i) = stod(row[row_index++]);
+  }
+  return true;
+}
+
+//Check the first vector and find its dimension
+int FindDimension(ifstream &data){
+  int dimension=0;
+  streampos oldpos = data.tellg();  // stores the stream position
+  string line;
+  getline(data,line);               //get the whole vector
+  istringstream is(line);         //treat line like a stream
+  string id;                      //skip first string, that's the id
+  is >> id;
+  coord n;
+  while( is >> n ) {                //count coords in line
+    dimension++;
+  }
+  data.seekg (oldpos);   // get back to the position
+  return dimension;
+}
+
 /*Returns a map that maps all cryptocurrency names/slangs to the
 subsquent crypto name. In the file each line concerns a different cryptocurrency
 and the 5th column contains its full/real name, if the 5th column is absent the
@@ -134,7 +180,7 @@ map<string,string> ReadCryptos(ifstream &data){
     data >> row;
   }
   cout << "Found " << num_crypto << " different cryptocurrrencies." << endl;
-  CmdArgs::dimension = num_crypto;
+  CmdArgs::crypto_dimension = num_crypto;
   return CryptoNameMap;
 }
 

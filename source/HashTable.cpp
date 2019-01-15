@@ -56,6 +56,31 @@ HashTable::HashTable(vector<myvector*>& vectors,string metric_name,int dimension
   InsertVector(vectors);
 }
 
+HashTable::HashTable(vector<myvector>& vectors,string metric_name,int dimension,
+  string tabletype)
+:tabletype(tabletype),buckets(TableSize(tabletype,metric_name,vectors.size()))
+{
+  if(metric_name == "euclidean"){
+    if(tabletype=="lsh")
+      metric = new LSH::Euclidean(dimension, buckets.size());
+    else if(tabletype=="hypercube")
+      metric = new Hypercube::Euclidean(dimension, buckets.size());
+    else{
+      cout << "Unknown tabletype: " << tabletype << endl;
+      exit(UNKNOWN_METRIC);
+    }
+  }
+  else if("cosine"){
+    metric = new CosineSimilarity(dimension);
+  }
+  else{
+    cout << "Unknown metric: " << metric_name << endl;
+    exit(UNKNOWN_METRIC);
+  }
+  cout<<"Creating "<< tabletype<<" HashTable with "<<buckets.size()<<"buckets"<<endl;
+  InsertVector(vectors);
+}
+
 HashTable::~HashTable(){
   //cout << "HashTable destroyed" << endl;
   delete metric;
@@ -75,6 +100,11 @@ void HashTable::InsertVector(vector<myvector*> &vectors){
   }
 }
 
+void HashTable::InsertVector(vector<myvector> &vectors){
+  for(auto it=vectors.begin(); it!=vectors.end(); it++){
+    Insert(&(*it));
+  }
+}
 
 
 /*Find in which bucket a vector should belong.*/

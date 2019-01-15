@@ -69,3 +69,11 @@ void TweetScores(vector<Tweet*> &Tweets, map<string,double> &lexicon){
     (*it)->Score(lexicon);
   }
 }
+
+std::map<std::string,Tweet*> MapTweetsById(std::vector<Tweet*> Tweets){
+  std::map<std::string,Tweet*> tweet_id_map;
+  for(auto it=Tweets.begin(); it!=Tweets.end(); it++){
+    tweet_id_map[(*it)->getTweetId()] = *it;
+  }
+  return tweet_id_map;
+}
