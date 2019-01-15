@@ -38,6 +38,50 @@ std::string User::getUserId(){
   return userid;
 }
 
+extern vector<string> CryptoOrder;
+
+std::vector<std::string> User::getTopCryptos(int n){
+  std::vector<pair<int,double>> myheap; //max heap
+  double max = vector[0];
+
+  for(int i=0; i<vector.size(); i++){
+    if(myheap.size() < n){
+      //not filled yet, just insert and remember the lowest max
+      myheap.push_back(pair<int,double>(i,vector[i]));
+      push_heap(myheap.begin(), myheap.end(), [](pair<int,double>&a,
+                pair<int,double>&b){return a.second<b.second;});
+      if(vector[i] < max)
+        max=vector[i];
+    }
+    else{
+      if(vector[i] >= max){
+        pop_heap(myheap.begin(),myheap.end());  //reorder elements
+        myheap.pop_back();                   //remove max dist element
+        myheap.push_back(pair<int,double>(i,vector[i]));
+        push_heap(myheap.begin(), myheap.end(), [](pair<int,double>&a,
+                  pair<int,double>&b){return a.second<b.second;});
+        max = myheap.front().second;;
+      }
+    }
+  }
+  std::vector<string> result;
+  for(int i=0; i<myheap.size(); i++){
+    if(result.size() >= n)
+      break;  //got enough results, stop
+    //take max element from heap
+    int pos = myheap.front().first;
+    pop_heap(myheap.begin(),myheap.end());  //delete max element
+    myheap.pop_back();
+    string crypto_name = CryptoOrder[pos];
+    if(crypto_values.find(crypto_name)==crypto_values.end()){
+      //only add unkown cryptos to result
+      result.push_back(crypto_name);
+    }
+  }
+  return result;
+
+}
+
 
 vector<User*> GroupTweetsByUser(UserMap &usermap, std::vector<Tweet*> &Tweets){
   vector<User*> users;
@@ -173,7 +217,7 @@ vector<User*> CreateVirtualUsers(const std::vector<Cluster> &Clusters,
     vector<myvector*> cluster_members = Clusters[i].getMembers();
     for(auto it=cluster_members.begin(); it!=cluster_members.end(); it++){
       if(tweet_id_map.find((*it)->get_id()) == tweet_id_map.end())
-        exit(TWEET_NOT_IN_MAP);
+        continue; //exit(TWEET_NOT_IN_MAP);
       vusers[i]->addTweet(tweet_id_map[(*it)->get_id()]);
     }
     vusers[i]->CalcCryptoValues(CryptoNameMap);
@@ -184,7 +228,10 @@ vector<User*> CreateVirtualUsers(const std::vector<Cluster> &Clusters,
 vector<User*> CopyUsers(vector<User*> &Users){
   vector<User*> CopiedUsers(Users.size());
   for(int i=0; i<Users.size(); i++){
-    CopiedUsers[i] = new User(*(Users[i]));
+    if(Users[i] == NULL)
+      CopiedUsers[i] = NULL;
+    else
+      CopiedUsers[i] = new User(*(Users[i]));
   }
   return CopiedUsers;
 }

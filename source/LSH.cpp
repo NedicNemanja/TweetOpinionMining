@@ -28,7 +28,8 @@ int num_of_nn){
         //reorder elements to keep heap property
         push_heap(nns.begin(), nns.end(), [](pair<myvector*,double>&a,
                   pair<myvector*,double>&b){return a.second<b.second;});
-        if(distance < furthest_nn_dist){
+        //remember the furthest nn
+        if(distance > furthest_nn_dist){
           furthest_nn_dist = distance;
         }
       }
@@ -43,7 +44,7 @@ int num_of_nn){
           push_heap(nns.begin(), nns.end(),[](pair<myvector*,double>&a,
                     pair<myvector*,double>&b){return a.second<b.second;});
           //update furthest_nn_dist
-          furthest_nn_dist = distance;
+          furthest_nn_dist = nns.front().second;
         }
       }
     }

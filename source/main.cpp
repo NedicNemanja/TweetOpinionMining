@@ -10,8 +10,16 @@
 #include "myvector.hpp"
 #include "HashTable.hpp"
 #include "utility.hpp"
+#include "WriteOutput.hpp"
 
 using namespace std;
+
+vector<string> CryptoOrder;  //how cryptos are ordered in myvectors
+
+void SetCryptoOrder(set<string>& CryptoSet){
+  for(auto it=CryptoSet.begin(); it!=CryptoSet.end(); it++)
+    CryptoOrder.push_back(*it);
+}
 
 int main(int argc, char** argv){
   /*****************PREPROCESSING**********************************************/
@@ -47,6 +55,7 @@ int main(int argc, char** argv){
   set<string> CryptoSet;  //set of all cryptos by their real name
   for(auto it=CryptoNameMap.begin(); it!=CryptoNameMap.end(); it++)
     CryptoSet.insert(it->second);
+  SetCryptoOrder(CryptoSet);
 
   //open and read configuration file
   ReadConfigurationFile();
@@ -64,7 +73,7 @@ int main(int argc, char** argv){
   UserMap usermap;              //maps users by userid
   /*Assign each tweet to its user*/
   vector<User*> Users = GroupTweetsByUser(usermap,Tweets);
-  vector<User*> UsersCopy = CopyUsers(Users); //keep a copy before tampering
+
   vector<HashTable*> LSH_Hashtables(CmdArgs::L);
 
   /*****************************************************************************
@@ -76,6 +85,7 @@ int main(int argc, char** argv){
     (*user)->CalcCryptoValues(CryptoNameMap);
   //Turning crypto_values into myvector type for each user
   vector<myvector*> UserVectors = VectorizeUsers(Users,CryptoSet);
+  vector<User*> UsersCopy = CopyUsers(Users); //keep a copy before tampering
   //Initialize Hashtables
   for(int i=0; i<CmdArgs::L; i++){
     LSH_Hashtables[i]=new HashTable(UserVectors,"cosine",CmdArgs::crypto_dimension,"lsh");
@@ -89,12 +99,11 @@ int main(int argc, char** argv){
   cout << "Done." << endl;
   //cleanup
   for(auto it=LSH_Hashtables.begin(); it!=LSH_Hashtables.end(); it++) delete (*it);
-  for(auto it=Users.begin(); it!=Users.end(); it++) delete (*it);
 
   /*****************************************************************************
   *********Rate unknown cryptos using Cosine-LSH based on tweet Clusters(cj)****
   *****************************************************************************/
-  cout<<endl<<"Rate unknown cryptos using Cosine-LSH based on tweet Clusters...";
+  cout<<endl<<"Rate unknown cryptos using Cosine-LSH based on tweet Clusters..." << endl;
   //Initialize Hashtables for tweets
   vector<HashTable*> LSH_Hashtables_tweets(CmdArgs::L);
   for(int i=0; i<CmdArgs::L; i++){
@@ -111,8 +120,10 @@ int main(int argc, char** argv){
   map<string,Tweet*> tweet_id_map= MapTweetsById(Tweets);
   //now use tweet clusters to create virual users and calc their crypto values
   vector<User*> VirtualUsers = CreateVirtualUsers(S.getClusters(),tweet_id_map,CryptoNameMap);
+  cout << VirtualUsers.size() << " VirtualUsers." << endl;
   //turning crypto_values into myvector type for each virtual user
-  vector<myvector*> VirtualUserVectors = VectorizeUsers(UsersCopy,CryptoSet);
+  vector<myvector*> VirtualUserVectors = VectorizeUsers(VirtualUsers,CryptoSet);
+
   //Initialize Hashtables for VirtualUsers
   for(int i=0; i<CmdArgs::L; i++){
     LSH_Hashtables[i]
@@ -125,12 +136,15 @@ int main(int argc, char** argv){
     (*it)->RateByNNSimilarity(LSH_Hashtables,CryptoSet);
   }
   cout << "Done." << endl;
+  WriteOutput(outfile,Users,UsersCopy,usermap,CryptoSet);
+
   //cleanup
   for(auto it=LSH_Hashtables_tweets.begin();it!=LSH_Hashtables_tweets.end();it++)
     delete (*it);
   for(auto it=LSH_Hashtables.begin();it!=LSH_Hashtables.end();it++)delete (*it);
-  for(auto it=VirtualUsers.begin(); it!=VirtualUsers.end(); it++) delete (*it);
+  for(auto it=Users.begin(); it!=Users.end(); it++) delete (*it);
   for(auto it=UsersCopy.begin(); it!=UsersCopy.end(); it++) delete (*it);
+  for(auto it=VirtualUsers.begin(); it!=VirtualUsers.end(); it++) delete (*it);
 
   /*****************************************************************************
   *********************
@@ -139,6 +153,7 @@ int main(int argc, char** argv){
 
   //Cleanup
   for(auto it=Tweets.begin(); it!=Tweets.end(); it++) delete (*it);
+  outfile.close();
 
   return OK;
 /*

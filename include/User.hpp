@@ -26,6 +26,7 @@ class User{
     void print();
     std::vector<Tweet*> getTweets();
     std::string getUserId();
+    std::vector<std::string> getTopCryptos(int n);
     /*Take the score of every user's tweet and add it to the
     cryptocurrency/ies the tweet mentions*/
     void CalcCryptoValues(std::map<std::string,std::string> &CryptoNameMap);
