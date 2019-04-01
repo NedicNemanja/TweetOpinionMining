@@ -7,7 +7,7 @@ Each token is checked again our Lexicon where, it carries a value in the range[-
 
 A totalScore is calculated, for each Tweet, as following:
 
-<a href="https://www.codecogs.com/eqnedit.php?latex=totalScore_i&space;=&space;\sum_{k=0}^{n}Lexicon.getValue(token_k)" target="_blank"><img src="https://latex.codecogs.com/gif.latex?totalScore_i&space;=&space;\sum_{k=0}^{n}Lexicon.getValue(token_k)" title="totalScore_i = \sum_{k=0}^{n}Lexicon.getValue(token_k)" /></a>
+<a href="https://www.codecogs.com/eqnedit.php?latex=totalScore_i&space;=&space;\sum_{k=0}^{n}Lexicon.value(token_k)" target="_blank"><img src="https://latex.codecogs.com/gif.latex?totalScore_i&space;=&space;\sum_{k=0}^{n}Lexicon.value(token_k)" title="totalScore_i = \sum_{k=0}^{n}Lexicon.value(token_k)" /></a>
 
 Each totalScore is normalised using this formula:
 
