@@ -1,8 +1,7 @@
 # TweetOpinionMining
 
-```
-Opining mining/Sentiment analysis of a Tweet vectorized dataset on the topic of cruptocurrencies. The goal is to be able to predict User sentiment towards cruptocurrencies which they have never mentioned. That is achieved using 2 distinct methods discussed below.
-```
+
+>Opining mining/Sentiment analysis of a Tweet vectorized dataset on the topic of cruptocurrencies. The goal is to be able to predict User sentiment towards cruptocurrencies which they have never mentioned. That is achieved using 2 distinct methods discussed below.
 
 
 Every Tweet is preprocessed as a set of tokens.
@@ -42,4 +41,4 @@ The point here being that a Virtual User is much more representative of the aver
 
 The results are written in an output file. For each method the users are enumerated. One user per line. The user's name is the first string, the next 5 represent the top5 cryptos that are recommended for the user using only the NearestNeighbor method and the last 2 represent the top2 cryptos recommended for the user using the Clustering Method.
 
-This project was done as a task for a University project. Although I learned a lot, I wish I had more time to dedicate to it. There is much more that could've been done such as implementing and testing more method based on User Clustering instead of tweet clustering and better evaluation for each method using 10-fold cross-validation.
+This project was done as a task for a University project. Although I learned a lot, I wish I had more time to dedicate to it. There is much more that could've been done such as implementing and testing more methods based on User Clustering instead of tweet clustering and better evaluation for each method using 10-fold cross-validation.
