@@ -1,7 +1,7 @@
 # TweetOpinionMining
 
 
->Opining mining/Sentiment analysis of a Tweet vectorized dataset on the topic of cruptocurrencies. The goal is to be able to predict User sentiment towards cruptocurrencies which they have never mentioned. That is achieved using 2 distinct methods discussed below.
+>Opinion mining/Sentiment analysis of a Tweet vectorized dataset on the topic of cruptocurrencies. The goal is to be able to predict User sentiment towards cruptocurrencies which they have never mentioned. That is achieved using 2 distinct methods discussed below.
 
 
 Every Tweet is preprocessed as a set of tokens.
