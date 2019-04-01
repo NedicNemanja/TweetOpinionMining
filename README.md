@@ -22,10 +22,13 @@ Each user holds a sentiment value towards the cruptocurrencies he/she has mentio
 For example: Whenever a User mentions "bitcoin" in a Tweet, that Tweet's totalScore get added to the bitcoin sentiment value of that user. If that user also mentions ethernum then the totalScore also get added to ethernum sentiment value etc.
 
 #Rate unknown cryptos using Nearest Neighbor (CosineSimilarity+LocalitySensitiveHashing) based on other users
+
 Find NUM_NN (you can edit this variable) Nearest Neighbors. Calculate the similarity betwen the target-user and each NN using Cosine Similarity. Use the following formula to calculate the sentiment value of cryptos that are unknown(has not mentioned) to the user:
 
 
-<a href="https://www.codecogs.com/eqnedit.php?latex=targetUser\_sentimentValueOfCrypto=\sum^{NNs}NN.sentimentValue(crypto)*CosineSimilarity(targetUser,NN)" target="_blank"><img src="https://latex.codecogs.com/gif.latex?targetUser\_sentimentValueOfCrypto=\sum^{NNs}NN.sentimentValue(crypto)*CosineSimilarity(targetUser,NN)" title="targetUser\_sentimentValueOfCrypto=\sum^{NNs}NN.sentimentValue(crypto)*CosineSimilarity(targetUser,NN)" /></a>
+<a href="https://www.codecogs.com/eqnedit.php?latex=\inline&space;targetUser\_sentimentValueOfCrypto=\sum^{num_NNs}NNeighbor.sentimentValue(crypto)*CosineSimilarity(targetUser,NN)/num_NNs" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\inline&space;targetUser\_sentimentValueOfCrypto=\sum^{num_NNs}NNeighbor.sentimentValue(crypto)*CosineSimilarity(targetUser,NN)/num_NNs" title="targetUser\_sentimentValueOfCrypto=\sum^{num_NNs}NNeighbor.sentimentValue(crypto)*CosineSimilarity(targetUser,NN)/num_NNs" /></a>
+
+The general gist of the formula is that we extract the average sentiment value for each unkown crypto, but adjusted to the similarity between our target_user and each of his NearestNeighbors.
 
 
 Using a previous project of mine (ClusteringAlgorithms) in order to construct 
