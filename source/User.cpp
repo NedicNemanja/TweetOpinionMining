@@ -4,7 +4,7 @@
 #include "CosineSimilarity.hpp"
 #include "utility.hpp"
 
-#include <math.h>
+#include <math.h> 
 
 using namespace std;
 
