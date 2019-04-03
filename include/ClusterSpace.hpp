@@ -36,7 +36,7 @@ class ClusterSpace{
     //Overloaded so that a center within hamming_dist is mapped to a bucket
     std::multimap<int,Cluster*> MapCentersToBuckets(HashTable&,int hamm_dist);
     //unassign all members from clusters and reset AssignedVectorBitMap
-    void UnassignAll();
+    void UnassignAll(); 
     /*Run the clustering algorithms pointed by init_algorithm,assign...etc*/
     void RunClusteringAlgorithms(MyVectorContainer&,std::vector<HashTable*>,HashTable*);
     /*Assign vectors to their nearest center*/
