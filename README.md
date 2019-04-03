@@ -5,7 +5,7 @@
 
 
 Every Tweet is preprocessed as a set of tokens.
-Each token is checked again our Lexicon where, it carries a value in the range[-1,+1]. If it does not exist in the Lexicon it is simply regarded as a neutral word and its value is 0.
+Each token is checked against our Lexicon where, it carries a value in the range[-1,+1]. If it does not exist in the Lexicon it is simply regarded as a neutral word and its value is 0.
 
 A totalScore is calculated, for each Tweet, as following:
 
@@ -20,14 +20,14 @@ Another Lexicon exist containing all the cryptocurrencies an their relevant name
 
 
 Each user holds a sentiment value towards the cruptocurrencies he/she has mentioned in a Tweet. 
-For example: Whenever a User mentions "bitcoin" in a Tweet, that Tweet's totalScore get added to the bitcoin sentiment value of that user. If that user also mentions ethernum then the totalScore also get added to ethernum sentiment value etc.
+For example: Whenever a User mentions "bitcoin" in a Tweet, that Tweet's totalScore get added to the bitcoin sentiment value of that user. If that user also mentions ethernum, then the totalScore of that Tweet also gets added to ethernum sentiment value etc.
 
 # Rate unknown cryptos using Nearest Neighbor (CosineSimilarity+LocalitySensitiveHashing) based on other users
 
 Find NUM_NN (you can edit this variable) Nearest Neighbors. Calculate the similarity betwen the target-user and each NN using Cosine Similarity. Use the following formula to calculate the sentiment value of cryptos that are unknown(has not mentioned) to the user:
 
 
-<a href="https://www.codecogs.com/eqnedit.php?latex=targetUser\_sentimentValueOfCrypto=\sum^{num_NNs}NNeighbor.sentimentValue(crypto)*CosineSimilarity(targetUser,NN)/num_NNs" target="_blank"><img src="https://latex.codecogs.com/gif.latex?targetUser\_sentimentValueOfCrypto=\sum^{num_NNs}NNeighbor.sentimentValue(crypto)*CosineSimilarity(targetUser,NN)/num_NNs" title="targetUser\_sentimentValueOfCrypto=\sum^{num_NNs}NNeighbor.sentimentValue(crypto)*CosineSimilarity(targetUser,NN)/num_NNs" /></a>
+<a href="https://www.codecogs.com/eqnedit.php?latex=targetUser\_sentimentValueOfCrypto=\sum^{num_NNs}NNeighbor.sentimentValue(crypto)*CosineSimilarity(targetUser,NN)/num_NNs" target="_blank"><img src="https://latex.codecogs.com/gif.latex?targetUser\_sentimentValueOfCrypto=\sum^{num_{NNs}}NNeighbor.sentimentValue(crypto)*CosineSimilarity(targetUser,NN)/num_{NNs}" title="targetUser\_sentimentValueOfCrypto=\sum^{num_{NNs}}NNeighbor.sentimentValue(crypto)*CosineSimilarity(targetUser,NN)/num_{NNs}" /></a>
 
 The general gist of the formula is that we extract the average sentiment value for each unkown crypto of our target_user using the sum of sentiment values that his Nearest Neighbors had for that crypto, but adjusted/weighted by the similarity between our target_user and each of his NearestNeighbors.
 
